@@ -3,7 +3,7 @@
 [![CI](https://github.com/PopArtDesign/rambo/actions/workflows/ci.yaml/badge.svg)](https://github.com/PopArtDesign/rambo/actions/workflows/ci.yaml)
 [![GitHub license](https://img.shields.io/github/license/PopArtDesign/rambo)](https://github.com/PopArtDesign/rambo/blob/main/LICENSE)
 
-Rambo is a simple backup tool for web sites ([Joomla!](https://www.joomla.org/), [WordPress](https://wordpress.org/) and etc.) written in [Bash](https://www.gnu.org/software/bash/).
+Rambo is a simple backup tool for web sites ([Joomla](https://www.joomla.org/), [WordPress](https://wordpress.org/) and others) written in [Bash](https://www.gnu.org/software/bash/) (requires bash 4+).
 
 ## Install
 
@@ -19,21 +19,65 @@ Global (`/opt`):
 sudo git clone --depth=1 https://github.com/PopArtDesign/rambo /opt/rambo && sudo ln -s /opt/rambo/bin/rambo /usr/local/bin/rambo
 ```
 
+See [Uninstall](#uninstall) to remove Rambo.
+
 ## Usage
 
-Rambo backups all site's data into a one `.zip` archive. Thanks to it's [plugins](./plugin) it can detect site's configuration like database, cache folders and etc. and include or exclude some data from the final backup.
+Rambo backs up all site data into a single `.zip` archive. Its [plugins](./plugin) detect site configuration — database, cache folders and more — and include or exclude files from the final backup.
 
-In simple case you can just run:
+Other commands include `restore`, `db:dump`, `db:cli`, `detect`, and `plugins` — see below. Run `rambo --help` for the full list.
+
+### backup
 
 ```sh
 rambo backup /path/to/site /path/to/backup.zip
 ```
 
-To get more information about available commands try `--help`
+Creates a `.zip` archive of the site files plus an optional database dump (embedded inside). Refuses to overwrite existing files; backup path must end in `.zip`.
+
+### restore
 
 ```sh
-rambo --help
+rambo restore /path/to/site /path/to/backup.zip
 ```
+
+Extracts a backup archive into the target directory. **The target must exist and be completely empty** (`ls -A` check). If the backup contains a database dump, it prompts before importing.
+
+### db:dump
+
+```sh
+rambo db:dump /path/to/site
+```
+
+Exports the site's configured database to stdout as SQL. Fails if no database is detected.
+
+### db:cli
+
+```sh
+rambo db:cli /path/to/site
+```
+
+Opens an interactive MySQL shell using the site's configured credentials. Requires `mysql` CLI tool.
+
+### detect
+
+```sh
+rambo detect /path/to/site
+```
+
+Prints the resolved configuration — plugin, config files, root path, exclude/include patterns, and database settings. Useful for debugging why a site isn't backing up correctly.
+
+### plugins
+
+```sh
+rambo plugins          # show active plugin name
+rambo plugins --all    # show all discovered plugins
+rambo plugins --paths  # show plugin search paths
+```
+
+Plugins auto-detect site type (wordpress, joomla, default) from executable scripts in predefined search dirs (`plugin/`, `$HOME/.local/share/rambo/plugin`, `~/.rambo/plugin`, `/usr/local/share/rambo/plugin`, `/usr/share/rambo`, and repo-local `plugin/`). The first one that succeeds becomes active. Plugins also load extra config via their stdout output.
+
+## Configuration
 
 ### Local config file (`.rambo.conf`)
 
@@ -41,7 +85,7 @@ To customize site backup process you can create a special config file in your si
 
 ```sh
 #
-# The prefix 'xA4di35ie' added for security reasons, 
+# The prefix 'xA4di35ie' added for security reasons,
 # because site's root can be publicly available from the web.
 # You can use any prefix you want or just omit it.
 #
@@ -78,6 +122,8 @@ Then you should specify path to config file instead of site's root:
 rambo backup /etc/rambo/mysite.conf mysite.zip
 ```
 
+Config notes: unknown keys cause errors (only documented keys accepted); `root` key is valid only in main config files, not in local `.rambo.conf`.
+
 ## Uninstall
 
 Local (`~/.local`):
@@ -94,4 +140,4 @@ sudo unlink /usr/local/bin/rambo; sudo rm -rf /opt/rambo
 
 ## License
 
-Copyright (c) Voronkovich Oleg. Distributed under the MIT.
+Copyright (c) Voronkovich Oleg. Distributed under the [MIT License](LICENSE).
