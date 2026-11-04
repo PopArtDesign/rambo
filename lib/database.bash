@@ -91,11 +91,19 @@ app::database::is_mariadb() {
 }
 
 app::database::mysqldump() {
-    command mysqldump --defaults-file=<(app::database::mysql_credentials 'mysqldump') "$@"
+    local binary='mysqldump'
+
+    command -v mysqldump > /dev/null 2>&1 || binary='mariadb-dump'
+
+    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 app::database::mysql() {
-    command mysql --defaults-file=<(app::database::mysql_credentials 'client') "$@"
+    local binary='mysql'
+
+    command -v mysql > /dev/null 2>&1 || binary='mariadb'
+
+    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 app::database::mariadb_dump() {

@@ -199,6 +199,28 @@ Describe 'app::database::dump'
         The output should include '--single-transaction'
     End
 
+    It 'falls back to mariadb-dump when mysqldump is not installed'
+        site_config[database_type]='mysql'
+
+        dir="${SHELLSPEC_TMPBASE}/mariadb-only-bin"
+
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        echo '#!/bin/bash' > "${dir}/mariadb-dump"
+        echo 'echo "$@"' >> "${dir}/mariadb-dump"
+
+        chmod +x "${dir}/mariadb-dump"
+
+        PATH="${dir}:/usr/bin:/bin"
+
+        When call app::database::dump
+
+        The status should be success
+        The output should include '--single-transaction'
+        The output should include '--no-tablespaces'
+    End
+
     It 'dumps postgresql database'
         site_config[database_type]='postgresql'
         site_config[database_host]='db.example.com'
@@ -249,6 +271,27 @@ Describe 'app::database::cli'
         Mock mariadb
             echo "$@"
         End
+
+        When call app::database::cli
+
+        The status should be success
+        The output should include 'test-db'
+    End
+
+    It 'falls back to mariadb client when mysql is not installed'
+        site_config[database_type]='mysql'
+
+        dir="${SHELLSPEC_TMPBASE}/mariadb-client-only-bin"
+
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        echo '#!/bin/bash' > "${dir}/mariadb"
+        echo 'echo "$@"' >> "${dir}/mariadb"
+
+        chmod +x "${dir}/mariadb"
+
+        PATH="${dir}:/usr/bin:/bin"
 
         When call app::database::cli
 

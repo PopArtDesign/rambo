@@ -110,6 +110,8 @@ When `database_type` is not set, Rambo detects it by looking for installed dump 
 2. `mariadb-dump` — type `mariadb`
 3. `pg_dump` — type `postgresql`
 
+Within the MySQL family the tools are interchangeable: `mariadb-dump`/`mariadb` are used when `mysqldump`/`mysql` are not installed, and vice versa.
+
 Set `database_type` explicitly to skip detection:
 
 ```sh
