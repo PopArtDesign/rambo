@@ -88,7 +88,7 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
 | `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
 | `database_name` | Database name for dump/restore operations | — | Local, main |
-| `database_type` | Database type: `mysql`, `mariadb` or `postgres` | auto-detected | Local, main |
+| `database_type` | Database type: `mysql`, `mariadb` or `postgresql` | auto-detected | Local, main |
 | `database_host` | Database host | — | Local, main |
 | `database_port` | Database port | — | Local, main |
 | `database_user` | Database user for dump/cli auth | — | Local, main |
@@ -102,18 +102,18 @@ Repeatable keys (`exclude`, `include`) may appear multiple times — values accu
 
 ### Database types
 
-Supported database types: `mysql`, `mariadb`, `postgres`.
+Supported database types: `mysql`, `mariadb`, `postgresql`.
 
 When `database_type` is not set, Rambo detects it by looking for installed dump tools, in this order:
 
 1. `mysqldump` — type `mysql`, or `mariadb` if the tool reports itself as MariaDB (on MariaDB systems `mysqldump` is usually a symlink to `mariadb-dump`)
 2. `mariadb-dump` — type `mariadb`
-3. `pg_dump` — type `postgres`
+3. `pg_dump` — type `postgresql`
 
 Set `database_type` explicitly to skip detection:
 
 ```sh
-database_type: postgres
+database_type: postgresql
 database_name: dbname
 database_user: dbuser
 database_password: dbpass

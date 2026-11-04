@@ -165,7 +165,7 @@ CONFIG
     It 'parses database options'
         Data:raw
             #|database_name: dbname
-            #|database_type: postgres
+            #|database_type: postgresql
             #|database_host: db.example.com
             #|database_port: 5432
             #|database_user: dbuser
@@ -176,7 +176,7 @@ CONFIG
 
         The status should be success
         The value "${site_config[database_name]}" should equal 'dbname'
-        The value "${site_config[database_type]}" should equal 'postgres'
+        The value "${site_config[database_type]}" should equal 'postgresql'
         The value "${site_config[database_host]}" should equal 'db.example.com'
         The value "${site_config[database_port]}" should equal '5432'
         The value "${site_config[database_user]}" should equal 'dbuser'
@@ -194,6 +194,17 @@ CONFIG
         The value "${site_config[database_type]}" should equal 'mysql'
     End
 
+    It 'accepts "PostgreSQL" database type'
+        Data:raw
+            #|database_type: PostgreSQL
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+    End
+
     It 'fails when invalid database type is specified'
         Data:raw
             #|database_type: sqlite
@@ -203,6 +214,17 @@ CONFIG
 
         The status should be failure
         The error should include 'site.conf: invalid database_type: sqlite'
+    End
+
+    It "doesn't accept 'postgres' database type alias"
+        Data:raw
+            #|database_type: postgres
+        End
+
+        When run app::site::load_config 'site.conf' 'main'
+
+        The status should be failure
+        The error should include 'site.conf: invalid database_type: postgres'
     End
 
     It 'fails when invalid key is encountered'

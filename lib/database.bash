@@ -10,7 +10,7 @@ app::database::dump() {
         mariadb )
             app::database::mariadb_dump --single-transaction "${site_config[database_name]}"
             ;;
-        postgres )
+        postgresql )
             app::database::pg_dump "${site_config[database_name]}"
             ;;
     esac
@@ -26,7 +26,7 @@ app::database::cli() {
         mariadb )
             app::database::mariadb "${site_config[database_name]}"
             ;;
-        postgres )
+        postgresql )
             app::database::psql "${site_config[database_name]}"
             ;;
     esac
@@ -71,7 +71,7 @@ app::database::detect_type() {
                 echo 'mariadb'
                 ;;
             pg_dump )
-                echo 'postgres'
+                echo 'postgresql'
                 ;;
         esac
 

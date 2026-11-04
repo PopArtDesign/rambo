@@ -153,7 +153,7 @@ app::site::load_config() {
                 ;;
             database_type )
                 case "${value,,}" in
-                    mysql|mariadb|postgres )
+                    mysql|mariadb|postgresql )
                         site_config[database_type]="${value,,}"
                         ;;
                     * )

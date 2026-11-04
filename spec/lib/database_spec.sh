@@ -66,7 +66,7 @@ Describe 'app::database::detect_type'
         The output should equal 'mariadb'
     End
 
-    It 'detects postgres by pg_dump binary'
+    It 'detects postgresql by pg_dump binary'
         dir="$(fake_bin_dir)"
         fake_binary "${dir}" 'pg_dump' 'echo "pg_dump (PostgreSQL) 16.2 (Debian 16.2-1)"'
 
@@ -75,7 +75,7 @@ Describe 'app::database::detect_type'
         When call app::database::detect_type
 
         The status should be success
-        The output should equal 'postgres'
+        The output should equal 'postgresql'
     End
 
     It 'prefers mysqldump over other dump tools'
@@ -113,12 +113,12 @@ Describe 'app::database::type'
     BeforeEach 'beforeEach'
 
     It 'uses configured database type'
-        site_config[database_type]='postgres'
+        site_config[database_type]='postgresql'
 
         When call app::database::type
 
         The status should be success
-        The value "${db_type}" should equal 'postgres'
+        The value "${db_type}" should equal 'postgresql'
     End
 
     It 'detects database type when it is not configured'
@@ -139,8 +139,8 @@ Describe 'app::database::type'
         When call app::database::type
 
         The status should be success
-        The value "${db_type}" should equal 'postgres'
-        The value "${site_config[database_type]}" should equal 'postgres'
+        The value "${db_type}" should equal 'postgresql'
+        The value "${site_config[database_type]}" should equal 'postgresql'
     End
 
     It 'fails when database type cannot be detected'
@@ -199,8 +199,8 @@ Describe 'app::database::dump'
         The output should include '--single-transaction'
     End
 
-    It 'dumps postgres database'
-        site_config[database_type]='postgres'
+    It 'dumps postgresql database'
+        site_config[database_type]='postgresql'
         site_config[database_host]='db.example.com'
         site_config[database_port]='5433'
 
@@ -257,7 +257,7 @@ Describe 'app::database::cli'
     End
 
     It 'launches psql client'
-        site_config[database_type]='postgres'
+        site_config[database_type]='postgresql'
 
         Mock psql
             echo "$@"

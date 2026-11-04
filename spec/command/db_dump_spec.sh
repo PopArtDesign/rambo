@@ -30,7 +30,7 @@ Describe 'rambo db:dump'
         Data:expand
             #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
             #|database_name: mydb
-            #|database_type: postgres
+            #|database_type: postgresql
             #|database_user: myuser
         End
 
