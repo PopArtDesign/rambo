@@ -79,17 +79,31 @@ Plugins auto-detect site type (wordpress, joomla, default) from executable scrip
 
 ## Configuration
 
+Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting with `#` are comments; blank lines are skipped. Unknown keys cause errors.
+
+### Available options
+
+| Key | Description | Default | Allowed in |
+|---|---|---|---|
+| `root` | Absolute or relative path to site root directory | — | Main config only |
+| `plugin` | Plugin name (auto-detected if omitted); must match an executable script name in plugin search paths | auto-detect | Local, main |
+| `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
+| `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
+| `database_name` | Database name for dump/restore operations | — | Local, main |
+| `database_user` | Database user for mysqldump/mysql auth | — | Local, main |
+| `database_password` | Database password for mysqldump/mysql auth | — | Local, main |
+| `database_dump_suffix` | Suffix appended to dump filenames (e.g. `.backup.sql`) | `.dump.sql` | Local, main |
+| `local_config_file_suffix` | Filename suffix searched for in site root (e.g. `.rambo.conf`) | `.rambo.conf` | Main config only |
+
+Repeatable keys (`exclude`, `include`) may appear multiple times — values accumulate.
+
+`root` key is valid **only** in main config files (passed as argument or via `/etc/rambo/…`). It is rejected in local `.rambo.conf` files.
+
 ### Local config file (`.rambo.conf`)
 
-To customize site backup process you can create a special config file in your site's root folder:
+Place a config file matching the local suffix pattern inside your site's root folder:
 
 ```sh
-#
-# The prefix 'xA4di35ie' added for security reasons,
-# because site's root can be publicly available from the web.
-# You can use any prefix you want or just omit it.
-#
-
 cat > xA4di35ie.rambo.conf <<CONFIG
 # Also available: 'wordpress' and 'joomla'
 # Try "rambo plugins" to see all available plugins
@@ -97,7 +111,7 @@ plugin: default
 
 exclude: .git/* .zip
 
-# Rambo can backup only one database
+# Rambo can back up only one database
 database_name: dbname
 database_user: dbuser
 database_password: dbpass
@@ -106,7 +120,7 @@ CONFIG
 
 ### Main config file
 
-If you don't want to store Rambo's config in your site's root, you can create the config file outside:
+For sites without local config access (or for global overrides), create a standalone config and pass it as the site argument:
 
 ```sh
 cat > /etc/rambo/mysite.conf <<CONFIG
@@ -114,15 +128,9 @@ root: /var/www/mysite
 plugin: default
 include: index.html uploads/*
 CONFIG
-```
 
-Then you should specify path to config file instead of site's root:
-
-```sh
 rambo backup /etc/rambo/mysite.conf mysite.zip
 ```
-
-Config notes: unknown keys cause errors (only documented keys accepted); `root` key is valid only in main config files, not in local `.rambo.conf`.
 
 ## Uninstall
 
