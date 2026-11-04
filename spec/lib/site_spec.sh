@@ -162,6 +162,49 @@ CONFIG
         The value "${site_config[*]}" should equal '.git /tmp'
     End
 
+    It 'parses database options'
+        Data:raw
+            #|database_name: dbname
+            #|database_type: postgres
+            #|database_host: db.example.com
+            #|database_port: 5432
+            #|database_user: dbuser
+            #|database_password: dbpass
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[database_name]}" should equal 'dbname'
+        The value "${site_config[database_type]}" should equal 'postgres'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '5432'
+        The value "${site_config[database_user]}" should equal 'dbuser'
+        The value "${site_config[database_password]}" should equal 'dbpass'
+    End
+
+    It 'lowercases database type'
+        Data:raw
+            #|database_type: MySQL
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'mysql'
+    End
+
+    It 'fails when invalid database type is specified'
+        Data:raw
+            #|database_type: sqlite
+        End
+
+        When run app::site::load_config 'site.conf' 'main'
+
+        The status should be failure
+        The error should include 'site.conf: invalid database_type: sqlite'
+    End
+
     It 'fails when invalid key is encountered'
         Data:raw
             #|root: /tmp

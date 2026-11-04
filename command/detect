@@ -2,6 +2,7 @@
 
 source "${app_common}"
 
+app::use 'database'
 app::use 'error'
 app::use 'site'
 
@@ -39,6 +40,12 @@ main() {
 
     app::site::load_site_config "${site_path}"
 
+    local db_type="${site_config[database_type]:-}"
+
+    if [[ -z "${db_type}" && -n "${site_config[database_name]:-}" ]]; then
+        db_type="$(app::database::detect_type || true)"
+    fi
+
     app_header 'Plugin'
 
     echo "Name: ${site_config[plugin]##*/}"
@@ -58,6 +65,9 @@ main() {
     app_header 'Database'
 
     echo "Name:     ${site_config[database_name]:-~}"
+    echo "Type:     ${db_type:-~}"
+    echo "Host:     ${site_config[database_host]:-~}"
+    echo "Port:     ${site_config[database_port]:-~}"
     echo "User:     ${site_config[database_user]:-~}"
     echo "Password: ${site_config[database_password]:-~}"
 }

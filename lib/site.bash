@@ -151,6 +151,22 @@ app::site::load_config() {
             database_name )
                 site_config[database_name]="${value}"
                 ;;
+            database_type )
+                case "${value,,}" in
+                    mysql|mariadb|postgres )
+                        site_config[database_type]="${value,,}"
+                        ;;
+                    * )
+                        app::error::error "${src}: invalid database_type: ${value}"
+                        ;;
+                esac
+                ;;
+            database_host )
+                site_config[database_host]="${value}"
+                ;;
+            database_port )
+                site_config[database_port]="${value}"
+                ;;
             database_user )
                 site_config[database_user]="${value}"
                 ;;

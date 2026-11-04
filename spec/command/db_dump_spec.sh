@@ -22,6 +22,38 @@ Describe 'rambo db:dump'
         The error should include 'Too many arguments. Expected: 1'
     End
 
+    It 'dumps configured database'
+        Mock pg_dump
+            echo "$@"
+        End
+
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|database_name: mydb
+            #|database_type: postgres
+            #|database_user: myuser
+        End
+
+        When call rambo db:dump /dev/stdin
+
+        The status should be success
+        The output should include 'mydb'
+        The output should include '--username'
+    End
+
+    It 'fails when database type cannot be detected'
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|database_name: mydb
+            #|database_type: sqlite
+        End
+
+        When run rambo db:dump /dev/stdin
+
+        The status should be failure
+        The error should include 'invalid database_type: sqlite'
+    End
+
     It 'shows help message if -h option specified'
         When call rambo db:dump -h
 

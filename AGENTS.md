@@ -9,7 +9,7 @@ Bash backup tool for Joomla, WordPress & static sites.
 - **Libs**: `lib/*.bash` loaded via `app::use '<name>'` from `common.bash`. Uses associative array cache (`app_libs_loaded`) — double-sourcing a lib silently no-ops.
   - `site.bash` — config loading chain, `site_config` associative array (shared across commands).
   - `plugin.bash` — plugin discovery/search paths.
-  - `database.bash` — mysqldump/mysql wrappers using temp credential files.
+  - `database.bash` — mysqldump/mariadb-dump/pg_dump and client wrappers using temp credential files. Resolves `database_type` (config key `mysql|mariadb|postgres`, otherwise auto-detected from installed dump tools: `mysqldump` → `mariadb-dump` → `pg_dump`).
   - `error.bash` — typed error functions (`app::error::error`, `::missing_argument`, etc.).
   - `util.bash` — `realpath` wrapper, `confirm` prompt.
   - `command.bash` — command resolver, lister.
@@ -29,7 +29,7 @@ Bash backup tool for Joomla, WordPress & static sites.
 
 ## Testing
 
-Requires Shellspec (see `mise.toml`). CI installs via `curl -fsSL https://git.io/shellspec | sh -s -- --yes`. No deps beyond `bash`, `zip`, `unzip`, and optional MySQL tools (`mysqldump`, `mysql`).
+Requires Shellspec (see `mise.toml`). CI installs via `curl -fsSL https://git.io/shellspec | sh -s -- --yes`. No deps beyond `bash`, `zip`, `unzip`, and optional DB tools (`mysqldump`, `mariadb-dump`, `pg_dump`, `mysql`, `mariadb`, `psql`).
 
 ```sh
 shellspec                              # run all tests
