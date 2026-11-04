@@ -75,8 +75,6 @@ rambo plugins --all    # show all discovered plugins
 rambo plugins --paths  # show plugin search paths
 ```
 
-Plugins auto-detect site type (wordpress, joomla, default) from executable scripts in predefined search dirs (`plugin/`, `$HOME/.local/share/rambo/plugin`, `~/.rambo/plugin`, `/usr/local/share/rambo/plugin`, `/usr/share/rambo`, and repo-local `plugin/`). The first one that succeeds becomes active. Plugins also load extra config via their stdout output.
-
 ## Configuration
 
 Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting with `#` are comments; blank lines are skipped. Unknown keys cause errors.
@@ -131,6 +129,76 @@ CONFIG
 
 rambo backup /etc/rambo/mysite.conf mysite.zip
 ```
+
+## Plugins
+
+Plugins auto-detect site type (WordPress, Joomla, etc.) from executable scripts in predefined search dirs:
+
+- `~/.rambo/plugin`
+- `~/.local/share/rambo/plugin`
+- `/usr/share/rambo`
+- `/usr/local/share/rambo/plugin`
+
+The first one that recognizes the site becomes active. You can also pick one explicitly via `plugin:` key in config.
+
+### How plugins work
+
+A plugin is any **executable bash script** placed in a plugin search directory. When Rambo starts, it runs each candidate plugin with the site root as CWD. A plugin signals recognition by **exiting 0**; any other exit status means "not my site".
+
+Configured plugins produce `key: value` lines on **stdout**, just like local/main config files. Those values override or supplement what you may have in your config files.
+
+Example — the built-in WordPress plugin reads `wp-config.php`:
+
+```bash
+#!/usr/bin/env bash
+
+[ -f 'wp-config.php' ] || exit 1          # fail = not WP
+
+cat <<CONFIG                              # pass config via stdout
+exclude: /wp-content/cache/*
+CONFIG
+
+sed -nE \
+    -e "s/^.*DB_NAME.*'(.*)'.*$/database_name: \1/p" \
+    -e "s/^.*DB_USER.*'(.*)'.*$/database_user: \1/p" \
+    -e "s/^.*DB_PASSWORD.*'(.*)'.*$/database_password: \1/p" \
+    'wp-config.php'
+```
+
+Plugin output is parsed by the same config loader — same keys, same rules. Keys marked "main config only" (like `root`) are rejected here.
+
+### The `default` plugin
+
+When no installed plugin recognizes the site, Rambo falls back to `default`. This acts as a no-op: it produces no extra config. You can create a real `default` plugin for static sites or anything unrecognized — place an executable script named `default` in any plugin search dir.
+
+### Creating a custom plugin
+
+1. Create an executable script in a plugin search path, e.g. `~/.local/share/rambo/plugin/mycms`:
+
+   ```sh
+   mkdir -p ~/.local/share/rambo/plugin
+   nano ~/.local/share/rambo/plugin/mycms
+   chmod +x ~/.local/share/rambo/plugin/mycms
+
+   ```
+2. Add detection logic (exit 1 to reject, exit 0 to claim):
+
+   ```bash
+   #!/usr/bin/env bash
+
+   [ -f 'my-cms.ini' ] || exit 1
+   [[ $(head -c 4 'my-cms.ini') == '[CMS]' ]] || exit 1
+
+   cat <<CONFIG
+   exclude: .git/* node_modules/* *.log cache/*
+   include: index.php assets/* uploads/*
+   database_name: mycms_db
+   database_user: mycms_user
+   database_password: $$(grep '^db_pass' 'my-cms.ini' | cut -d= -f2)
+   CONFIG
+   ```
+
+3. Test with `rambo detect /path/to/site` — it should show `plugin: mycms` and all expected config values.
 
 ## Uninstall
 
