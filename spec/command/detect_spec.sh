@@ -22,6 +22,23 @@ Describe 'rambo detect'
         The error should include 'Too many arguments. Expected: 1'
     End
 
+    It 'shows main config path'
+        main_config_file="$(realpath ./fixture/joomla-site.conf)"
+
+        When call rambo detect ./fixture/joomla-site.conf
+
+        The status should be success
+        The output should include "Main config:  ${main_config_file}"
+    End
+
+    It 'masks database password'
+        When call rambo detect ./fixture/custom-site
+
+        The status should be success
+        The output should include 'Password: ********'
+        The output should not include 'custom-password'
+    End
+
     It 'shows help message if -h option specified'
         When call rambo detect -h
 

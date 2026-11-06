@@ -17,7 +17,9 @@ app::error::error() {
         exit_code="${2}"
 
         if [[ "${exit_code}" -lt 1 || "${exit_code}" -gt 255 ]]; then
-            app::error::error "app::error::error(): invalid exit code: ${exit_code}" && return 1
+            app::error::error "app::error::error(): invalid exit code: ${exit_code}"
+
+            return 1
         fi
 
         shift 2

@@ -75,7 +75,7 @@ app::site::load_plugin_config() {
         for plg in $(app::plugin::plugins_list); do
             if plg_config="$(cd "${site_config[root]}" && "${plg}")"; then
                 plugin="${plg##*/}"
-                plugin_path="$(realpath ${plg})"
+                plugin_path="$(app::util::realpath "${plg}")"
                 plugin_config="${plg_config}"
 
                 break

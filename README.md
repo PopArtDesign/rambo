@@ -65,7 +65,7 @@ Opens an interactive database shell using the site's configured credentials. Req
 rambo detect /path/to/site
 ```
 
-Prints the resolved configuration — plugin, config files, root path, exclude/include patterns, and database settings. Useful for debugging why a site isn't backing up correctly.
+Prints the resolved configuration — plugin, config files, root path, exclude/include patterns, and database settings. Useful for debugging why a site isn't backing up correctly. Database passwords are masked.
 
 ### plugins
 
