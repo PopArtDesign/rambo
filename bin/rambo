@@ -6,7 +6,7 @@ declare -rx app_dir="$(dirname "${app_path}")"
 
 declare -rx app_base_path="$(realpath "${app_dir}/..")"
 declare -rx app_commands_path="${app_base_path}/command"
-declare -rx app_plugins_path="${HOME}/.local/share/${app_name}/plugin:${HOME}/.${app_name}/plugin:/usr/local/share/${app_name}/plugin:/usr/share/${app_name}:${app_base_path}/plugin"
+declare -rx app_plugins_path="${HOME}/.local/share/${app_name}/plugin:${HOME}/.${app_name}/plugin:/usr/local/share/${app_name}/plugin:/usr/share/${app_name}/plugin:${app_base_path}/plugin"
 declare -rx app_libs_path="${app_base_path}/lib"
 declare -rx app_common="${app_base_path}/common.bash"
 
@@ -20,10 +20,10 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
-            -h | --help ) cmd='help' ;;
-            -- ) shift && break ;;
-            -* ) app::error::unknown_option "${1}" ;;
-            * ) break
+        -h | --help) cmd='help' ;;
+        --) shift && break ;;
+        -*) app::error::unknown_option "${1}" ;;
+        *) break ;;
         esac
 
         shift
