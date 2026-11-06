@@ -60,7 +60,7 @@ Describe 'rambo db:dump'
         The output should include '--port=5433'
     End
 
-    It 'prefers explicit options over database_url'
+    It 'database_url options rewrite configured options'
         Mock pg_dump
             echo "$@"
         End
@@ -76,9 +76,9 @@ Describe 'rambo db:dump'
         When call rambo db:dump /dev/stdin
 
         The status should be success
-        The output should include 'configdb'
-        The output should include '--host=confighost'
-        The output should include '--port=5434'
+        The output should include 'mydb'
+        The output should include '--host=db.example.com'
+        The output should include '--port=5433'
     End
 
     It 'fails when database type cannot be detected'

@@ -152,7 +152,7 @@ app::site::load_config() {
                 site_config[include]+="${site_config[include]:+ }${value}"
                 ;;
             database_name )
-                app::site::set_database_option 'name' "${value}"
+                site_config[database_name]="${value}"
                 ;;
             database_url )
                 site_config[database_url]="${value}"
@@ -160,7 +160,7 @@ app::site::load_config() {
             database_type )
                 case "${value,,}" in
                     mysql|mariadb|postgresql )
-                        app::site::set_database_option 'type' "${value,,}"
+                        site_config[database_type]="${value,,}"
                         ;;
                     * )
                         app::error::error "${src}: invalid database_type: ${value}"
@@ -168,16 +168,16 @@ app::site::load_config() {
                 esac
                 ;;
             database_host )
-                app::site::set_database_option 'host' "${value}"
+                site_config[database_host]="${value}"
                 ;;
             database_port )
-                app::site::set_database_option 'port' "${value}"
+                site_config[database_port]="${value}"
                 ;;
             database_user )
-                app::site::set_database_option 'user' "${value}"
+                site_config[database_user]="${value}"
                 ;;
             database_password )
-                app::site::set_database_option 'password' "${value}"
+                site_config[database_password]="${value}"
                 ;;
             database_dump_suffix )
                 site_config[database_dump_suffix]="${value}"
@@ -190,14 +190,6 @@ app::site::load_config() {
                 ;;
         esac
     done
-}
-
-app::site::set_database_option() {
-    local option="${1}"
-    local value="${2}"
-
-    site_config["database_${option}"]="${value}"
-    site_config[database_explicit]+="${site_config[database_explicit]:+ }${option}"
 }
 
 app::site::check_site_root_exists_and_readable() {

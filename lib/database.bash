@@ -162,7 +162,7 @@ EOF
 }
 
 # Applies values parsed from "database_url" to "site_config".
-# Explicitly configured database options take precedence over URL values.
+# URL values rewrite previously configured database options.
 app::database::apply_url() {
     local url="${site_config[database_url]:-}"
 
@@ -183,14 +183,10 @@ app::database::apply_url() {
         ;;
     esac
 
-    app::database::is_explicit 'type' || site_config[database_type]="${parsed_url[type]}"
-    app::database::is_explicit 'name' || site_config[database_name]="${parsed_url[name]}"
-    app::database::is_explicit 'user' || site_config[database_user]="${parsed_url[user]}"
-    app::database::is_explicit 'password' || site_config[database_password]="${parsed_url[password]}"
-    app::database::is_explicit 'host' || site_config[database_host]="${parsed_url[host]}"
-    app::database::is_explicit 'port' || site_config[database_port]="${parsed_url[port]}"
-}
-
-app::database::is_explicit() {
-    [[ " ${site_config[database_explicit]:-} " == *" ${1} "* ]]
+    site_config[database_type]="${parsed_url[type]}"
+    site_config[database_name]="${parsed_url[name]}"
+    site_config[database_user]="${parsed_url[user]}"
+    site_config[database_password]="${parsed_url[password]}"
+    site_config[database_host]="${parsed_url[host]}"
+    site_config[database_port]="${parsed_url[port]}"
 }

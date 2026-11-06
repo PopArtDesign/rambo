@@ -240,37 +240,23 @@ Describe 'app::database::apply_url'
         The value "${site_config[database_type]}" should equal 'mysql'
     End
 
-    It 'prefers explicitly configured options over URL values'
-        site_config[database_url]='mysql://user:pass@localhost:3306/urldb'
-        site_config[database_explicit]='type name user password host port'
-        site_config[database_type]='postgresql'
+    It 'reapplies changed URL values over configured options'
         site_config[database_name]='configdb'
         site_config[database_user]='configuser'
-        site_config[database_password]='configpass'
-        site_config[database_host]='confighost'
-        site_config[database_port]='5432'
+
+        site_config[database_url]='mysql://user:pass@localhost:3306/firstdb'
+
+        app::database::apply_url
+
+        site_config[database_url]='postgresql://other:secret@db.example.com:5432/seconddb'
 
         When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'postgresql'
-        The value "${site_config[database_name]}" should equal 'configdb'
-        The value "${site_config[database_user]}" should equal 'configuser'
-        The value "${site_config[database_password]}" should equal 'configpass'
-        The value "${site_config[database_host]}" should equal 'confighost'
-        The value "${site_config[database_port]}" should equal '5432'
-    End
-
-    It 'fills only options that are not configured explicitly'
-        site_config[database_url]='postgresql://user:pass@db.example.com:5432/mydb'
-        site_config[database_explicit]='user'
-        site_config[database_user]='configuser'
-
-        When call app::database::apply_url
-
-        The status should be success
-        The value "${site_config[database_user]}" should equal 'configuser'
-        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_name]}" should equal 'seconddb'
+        The value "${site_config[database_user]}" should equal 'other'
+        The value "${site_config[database_password]}" should equal 'secret'
         The value "${site_config[database_host]}" should equal 'db.example.com'
         The value "${site_config[database_port]}" should equal '5432'
     End
