@@ -21,49 +21,59 @@ End
 
 
 Describe 'app::util::parse_url'
-    It 'parses URL into parsed_url'
-        When call app::util::parse_url 'postgresql://user:pass@db.example.com:5432/mydb'
+    It 'parses URL into provided array'
+        declare -A parsed=()
+
+        When call app::util::parse_url parsed 'postgresql://user:pass@db.example.com:5432/mydb'
 
         The status should be success
-        The value "${parsed_url[type]}" should equal 'postgresql'
-        The value "${parsed_url[name]}" should equal 'mydb'
-        The value "${parsed_url[user]}" should equal 'user'
-        The value "${parsed_url[password]}" should equal 'pass'
-        The value "${parsed_url[host]}" should equal 'db.example.com'
-        The value "${parsed_url[port]}" should equal '5432'
+        The value "${parsed[type]}" should equal 'postgresql'
+        The value "${parsed[name]}" should equal 'mydb'
+        The value "${parsed[user]}" should equal 'user'
+        The value "${parsed[password]}" should equal 'pass'
+        The value "${parsed[host]}" should equal 'db.example.com'
+        The value "${parsed[port]}" should equal '5432'
     End
 
     It 'parses URL without credentials'
-        When call app::util::parse_url 'mysql://localhost/mydb'
+        declare -A parsed=()
+
+        When call app::util::parse_url parsed 'mysql://localhost/mydb'
 
         The status should be success
-        The value "${parsed_url[type]}" should equal 'mysql'
-        The value "${parsed_url[name]}" should equal 'mydb'
-        The value "${parsed_url[user]:-}" should equal ''
-        The value "${parsed_url[password]:-}" should equal ''
-        The value "${parsed_url[host]}" should equal 'localhost'
-        The value "${parsed_url[port]:-}" should equal ''
+        The value "${parsed[type]}" should equal 'mysql'
+        The value "${parsed[name]}" should equal 'mydb'
+        The value "${parsed[user]:-}" should equal ''
+        The value "${parsed[password]:-}" should equal ''
+        The value "${parsed[host]}" should equal 'localhost'
+        The value "${parsed[port]:-}" should equal ''
     End
 
     It 'parses bracketed IPv6 host and port'
-        When call app::util::parse_url 'postgresql://user:pass@[::1]:5433/mydb'
+        declare -A parsed=()
+
+        When call app::util::parse_url parsed 'postgresql://user:pass@[::1]:5433/mydb'
 
         The status should be success
-        The value "${parsed_url[host]}" should equal '::1'
-        The value "${parsed_url[port]}" should equal '5433'
+        The value "${parsed[host]}" should equal '::1'
+        The value "${parsed[port]}" should equal '5433'
     End
 
     It 'fails when URL has no protocol'
-        When run app::util::parse_url 'user:pass@localhost/mydb'
+        declare -A parsed=()
+
+        When run app::util::parse_url parsed 'user:pass@localhost/mydb'
 
         The status should be failure
         The stderr should equal ''
     End
 
     It 'parses URL with unsupported protocol'
-        When call app::util::parse_url 'sqlite://user:pass@localhost/mydb'
+        declare -A parsed=()
+
+        When call app::util::parse_url parsed 'sqlite://user:pass@localhost/mydb'
 
         The status should be success
-        The value "${parsed_url[type]:-}" should equal 'sqlite'
+        The value "${parsed[type]:-}" should equal 'sqlite'
     End
 End

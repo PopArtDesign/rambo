@@ -31,14 +31,13 @@ app::util::confirm() {
     [[ "${reply}" == 'y' ]]
 }
 
-declare -gA parsed_url=()
-
-# Parses URL into "parsed_url" associative array.
+# Parses URL into the associative array named by first argument.
 # Keys: type, userinfo, name, user, password, host, port.
 app::util::parse_url() {
-    local url="${1:-}"
+    local -n out="${1:?parse_url: output variable name required}"
+    local url="${2:-}"
 
-    parsed_url=()
+    out=()
 
     if [[ "${url}" != *'://'* ]]; then
         return 1
@@ -90,11 +89,11 @@ app::util::parse_url() {
         host="${authority}"
     fi
 
-    parsed_url[type]="${type,,}"
-    parsed_url[userinfo]="${userinfo}"
-    parsed_url[name]="${name}"
-    parsed_url[user]="${user}"
-    parsed_url[password]="${password}"
-    parsed_url[host]="${host}"
-    parsed_url[port]="${port}"
+    out[type]="${type,,}"
+    out[userinfo]="${userinfo}"
+    out[name]="${name}"
+    out[user]="${user}"
+    out[password]="${password}"
+    out[host]="${host}"
+    out[port]="${port}"
 }

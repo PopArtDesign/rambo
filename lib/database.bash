@@ -164,27 +164,28 @@ EOF
 # Applies values parsed from "database_url" to "site_config".
 # Later config directives can override parsed values.
 app::database::apply_url() {
+    local -A parsed=()
     local url="${1:-${site_config[database_url]:-}}"
 
-    app::util::parse_url "${url}" || {
+    app::util::parse_url parsed "${url}" || {
         app::error::error "Invalid database_url: ${url}"
 
         return 1
     }
 
-    case "${parsed_url[type]}" in
+    case "${parsed[type]}" in
     mysql | mariadb | postgresql) ;;
     *)
-        app::error::error "Invalid database_url protocol: ${parsed_url[type]}"
+        app::error::error "Invalid database_url protocol: ${parsed[type]}"
 
         return 1
         ;;
     esac
 
-    site_config[database_type]="${parsed_url[type]}"
-    site_config[database_name]="${parsed_url[name]}"
-    site_config[database_user]="${parsed_url[user]}"
-    site_config[database_password]="${parsed_url[password]}"
-    site_config[database_host]="${parsed_url[host]}"
-    site_config[database_port]="${parsed_url[port]}"
+    site_config[database_type]="${parsed[type]}"
+    site_config[database_name]="${parsed[name]}"
+    site_config[database_user]="${parsed[user]}"
+    site_config[database_password]="${parsed[password]}"
+    site_config[database_host]="${parsed[host]}"
+    site_config[database_port]="${parsed[port]}"
 }
