@@ -168,7 +168,11 @@ app::database::apply_url() {
 
     [[ -z "${url}" ]] && return 0
 
-    app::util::parse_url "${url}" || return 1
+    app::util::parse_url "${url}" || {
+        app::error::error "Invalid database_url: ${url}"
+
+        return 1
+    }
 
     case "${parsed_url[type]}" in
     mysql | mariadb | postgresql) ;;

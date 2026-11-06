@@ -57,7 +57,7 @@ Describe 'app::util::parse_url'
         When run app::util::parse_url 'user:pass@localhost/mydb'
 
         The status should be failure
-        The error should include 'Invalid database_url: user:pass@localhost/mydb'
+        The stderr should equal ''
     End
 
     It 'parses URL with unsupported protocol'

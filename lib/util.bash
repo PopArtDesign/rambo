@@ -1,5 +1,3 @@
-app::use 'error'
-
 app::util::realpath() {
     local -a opts=()
     local working_dir="${PWD}"
@@ -43,8 +41,6 @@ app::util::parse_url() {
     parsed_url=()
 
     if [[ "${url}" != *'://'* ]]; then
-        app::error::error "Invalid database_url: ${url}"
-
         return 1
     fi
 
