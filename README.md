@@ -87,7 +87,7 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | `plugin` | Plugin name (auto-detected if omitted); must match an executable script name in plugin search paths | auto-detect | Local, main |
 | `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
 | `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
-| `database_url` | Database connection URL, e.g. `mysql://user:pass@localhost:3306/mydb` | — | Local, main |
+| `database_url` | Database connection URL, e.g. `mysql://user:pass@localhost:3306/mydb`; parsed into other `database_*` options at the directive site | — | Local, main |
 | `database_name` | Database name for dump/restore operations | — | Local, main |
 | `database_type` | Database type: `mysql`, `mariadb` or `postgresql` | auto-detected | Local, main |
 | `database_host` | Database host | — | Local, main |
@@ -134,7 +134,7 @@ database_url: mysql://user:pass@localhost:3306/mydb
 
 Supported protocols are `mysql`, `mariadb` and `postgresql`. The protocol determines `database_type`, and the URL components set `database_name`, `database_user`, `database_password`, `database_host` and `database_port`.
 
-Individual database options take precedence over values from `database_url` and can be used to override any extracted value:
+Database options listed after `database_url` override its parsed values (later directives win):
 
 ```sh
 database_url: mysql://user:pass@localhost:3306/mydb
