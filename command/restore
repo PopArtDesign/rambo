@@ -58,8 +58,6 @@ main() {
 
     app::site::load_plugin_config
 
-    app::database::apply_url
-
     printf 'Site: %s\n' "${site_config[root]}"
     printf 'Plugin: %s\n' "${site_config[plugin]}"
 

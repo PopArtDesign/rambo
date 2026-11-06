@@ -191,7 +191,35 @@ CONFIG
         When call app::site::load_config 'site.conf' 'main'
 
         The status should be success
-        The value "${site_config[database_url]}" should equal 'mysql://user:pass@localhost:3306/dbname'
+        The value "${site_config[database_type]}" should equal 'mysql'
+        The value "${site_config[database_name]}" should equal 'dbname'
+        The value "${site_config[database_host]}" should equal 'localhost'
+    End
+
+    It 'lets later directives override database_url values'
+        Data:raw
+            #|database_url: mysql://user:pass@localhost:3306/dbname
+            #|database_port: 3301
+            #|database_name: otherdb
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[database_port]}" should equal '3301'
+        The value "${site_config[database_name]}" should equal 'otherdb'
+        The value "${site_config[database_host]}" should equal 'localhost'
+    End
+
+    It 'fails when database_url is invalid'
+        Data:raw
+            #|database_url: localhost/mydb
+        End
+
+        When run app::site::load_config 'site.conf' 'main'
+
+        The status should be failure
+        The error should include 'invalid database_url: localhost/mydb'
     End
 
     It 'lowercases database type'

@@ -9,8 +9,6 @@ app::site::load_site_config() {
     app::site::load_local_config
 
     app::site::load_plugin_config
-
-    app::database::apply_url
 }
 
 app::site::load_main_config() {
@@ -155,7 +153,8 @@ app::site::load_config() {
                 site_config[database_name]="${value}"
                 ;;
             database_url )
-                site_config[database_url]="${value}"
+                app::database::apply_url "${value}" || app::error::error \
+                    "${src}: invalid database_url: ${value}"
                 ;;
             database_type )
                 case "${value,,}" in

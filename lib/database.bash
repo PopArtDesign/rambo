@@ -162,11 +162,9 @@ EOF
 }
 
 # Applies values parsed from "database_url" to "site_config".
-# URL values rewrite previously configured database options.
+# Later config directives can override parsed values.
 app::database::apply_url() {
-    local url="${site_config[database_url]:-}"
-
-    [[ -z "${url}" ]] && return 0
+    local url="${1:-${site_config[database_url]:-}}"
 
     app::util::parse_url "${url}" || {
         app::error::error "Invalid database_url: ${url}"

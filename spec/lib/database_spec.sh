@@ -244,9 +244,7 @@ Describe 'app::database::apply_url'
         site_config[database_name]='configdb'
         site_config[database_user]='configuser'
 
-        site_config[database_url]='mysql://user:pass@localhost:3306/firstdb'
-
-        app::database::apply_url
+        app::database::apply_url 'mysql://user:pass@localhost:3306/firstdb'
 
         site_config[database_url]='postgresql://other:secret@db.example.com:5432/seconddb'
 
@@ -261,29 +259,11 @@ Describe 'app::database::apply_url'
         The value "${site_config[database_port]}" should equal '5432'
     End
 
-    It 'reapplies changed URL values that were not configured explicitly'
-        site_config[database_url]='mysql://user:pass@localhost:3306/firstdb'
+    It 'fails when database URL is invalid'
+        When run app::database::apply_url ''
 
-        app::database::apply_url
-
-        site_config[database_url]='postgresql://other:secret@db.example.com:5432/seconddb'
-
-        When call app::database::apply_url
-
-        The status should be success
-        The value "${site_config[database_type]}" should equal 'postgresql'
-        The value "${site_config[database_name]}" should equal 'seconddb'
-        The value "${site_config[database_user]}" should equal 'other'
-        The value "${site_config[database_password]}" should equal 'secret'
-        The value "${site_config[database_host]}" should equal 'db.example.com'
-        The value "${site_config[database_port]}" should equal '5432'
-    End
-
-    It 'does nothing when database URL is not set'
-        When call app::database::apply_url
-
-        The status should be success
-        The value "${#site_config[@]}" should equal 0
+        The status should be failure
+        The error should include 'Invalid database_url:'
     End
 
     It 'fails when URL has no protocol'
