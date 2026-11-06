@@ -1,4 +1,5 @@
 app::use 'error'
+app::use 'util'
 
 app::database::dump() {
     app::database::type || return 1
@@ -160,86 +161,6 @@ ${site_config[database_port]:+port="${site_config[database_port]}"}
 EOF
 }
 
-declare -gA database_url_config=()
-
-# Parses database URL into "database_url_config" associative array.
-# Keys: type, name, user, password, host, port.
-app::database::parse_url() {
-    local url="${1:-}"
-
-    database_url_config=()
-
-    if [[ "${url}" != *'://'* ]]; then
-        app::error::error "Invalid database_url: ${url}"
-
-        return 1
-    fi
-
-    local type="${url%%://*}"
-    local rest="${url#*://}"
-
-    case "${type,,}" in
-    mysql | mariadb | postgresql)
-        type="${type,,}"
-        ;;
-    *)
-        app::error::error "Invalid database_url protocol: ${type}"
-
-        return 1
-        ;;
-    esac
-
-    local userinfo=''
-
-    if [[ "${rest}" == *'@'* ]]; then
-        userinfo="${rest%@*}"
-        rest="${rest##*@}"
-    fi
-
-    local authority="${rest%%/*}"
-    local name="${rest#"${authority}"}"
-
-    name="${name#/}"
-    name="${name%%\?*}"
-    name="${name%%#*}"
-
-    local user=''
-    local password=''
-
-    if [[ -n "${userinfo}" ]]; then
-        if [[ "${userinfo}" == *':'* ]]; then
-            user="${userinfo%%:*}"
-            password="${userinfo#*:}"
-        else
-            user="${userinfo}"
-        fi
-    fi
-
-    local host=''
-    local port=''
-
-    if [[ "${authority}" == \[*\]* ]]; then
-        host="${authority#\[}"
-        host="${host%%\]*}"
-
-        local address_suffix="${authority#*\]}"
-
-        [[ "${address_suffix}" == :* ]] && port="${address_suffix#:}"
-    elif [[ "${authority}" == *':'* ]]; then
-        host="${authority%%:*}"
-        port="${authority#*:}"
-    else
-        host="${authority}"
-    fi
-
-    database_url_config[type]="${type}"
-    database_url_config[name]="${name}"
-    database_url_config[user]="${user}"
-    database_url_config[password]="${password}"
-    database_url_config[host]="${host}"
-    database_url_config[port]="${port}"
-}
-
 # Applies values parsed from "database_url" to "site_config".
 # Explicitly configured database options take precedence over URL values.
 app::database::apply_url() {
@@ -247,14 +168,23 @@ app::database::apply_url() {
 
     [[ -z "${url}" ]] && return 0
 
-    app::database::parse_url "${url}" || return 1
+    app::util::parse_url "${url}" || return 1
 
-    app::database::is_explicit 'type' || site_config[database_type]="${database_url_config[type]}"
-    app::database::is_explicit 'name' || site_config[database_name]="${database_url_config[name]}"
-    app::database::is_explicit 'user' || site_config[database_user]="${database_url_config[user]}"
-    app::database::is_explicit 'password' || site_config[database_password]="${database_url_config[password]}"
-    app::database::is_explicit 'host' || site_config[database_host]="${database_url_config[host]}"
-    app::database::is_explicit 'port' || site_config[database_port]="${database_url_config[port]}"
+    case "${parsed_url[type]}" in
+    mysql | mariadb | postgresql) ;;
+    *)
+        app::error::error "Invalid database_url protocol: ${parsed_url[type]}"
+
+        return 1
+        ;;
+    esac
+
+    app::database::is_explicit 'type' || site_config[database_type]="${parsed_url[type]}"
+    app::database::is_explicit 'name' || site_config[database_name]="${parsed_url[name]}"
+    app::database::is_explicit 'user' || site_config[database_user]="${parsed_url[user]}"
+    app::database::is_explicit 'password' || site_config[database_password]="${parsed_url[password]}"
+    app::database::is_explicit 'host' || site_config[database_host]="${parsed_url[host]}"
+    app::database::is_explicit 'port' || site_config[database_port]="${parsed_url[port]}"
 }
 
 app::database::is_explicit() {

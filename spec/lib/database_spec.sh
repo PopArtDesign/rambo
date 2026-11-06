@@ -158,53 +158,7 @@ Describe 'app::database::type'
     End
 End
 
-Describe 'app::database::parse_url'
-    It 'parses URL into database_url_config'
-        When call app::database::parse_url 'postgresql://user:pass@db.example.com:5432/mydb'
 
-        The status should be success
-        The value "${database_url_config[type]}" should equal 'postgresql'
-        The value "${database_url_config[name]}" should equal 'mydb'
-        The value "${database_url_config[user]}" should equal 'user'
-        The value "${database_url_config[password]}" should equal 'pass'
-        The value "${database_url_config[host]}" should equal 'db.example.com'
-        The value "${database_url_config[port]}" should equal '5432'
-    End
-
-    It 'parses URL without credentials'
-        When call app::database::parse_url 'mysql://localhost/mydb'
-
-        The status should be success
-        The value "${database_url_config[type]}" should equal 'mysql'
-        The value "${database_url_config[name]}" should equal 'mydb'
-        The value "${database_url_config[user]:-}" should equal ''
-        The value "${database_url_config[password]:-}" should equal ''
-        The value "${database_url_config[host]}" should equal 'localhost'
-        The value "${database_url_config[port]:-}" should equal ''
-    End
-
-    It 'parses bracketed IPv6 host and port'
-        When call app::database::parse_url 'postgresql://user:pass@[::1]:5433/mydb'
-
-        The status should be success
-        The value "${database_url_config[host]}" should equal '::1'
-        The value "${database_url_config[port]}" should equal '5433'
-    End
-
-    It 'fails when URL has no protocol'
-        When run app::database::parse_url 'user:pass@localhost/mydb'
-
-        The status should be failure
-        The error should include 'Invalid database_url: user:pass@localhost/mydb'
-    End
-
-    It 'fails when URL protocol is not supported'
-        When run app::database::parse_url 'sqlite://user:pass@localhost/mydb'
-
-        The status should be failure
-        The error should include 'Invalid database_url protocol: sqlite'
-    End
-End
 
 Describe 'app::database::apply_url'
     beforeEach() {
