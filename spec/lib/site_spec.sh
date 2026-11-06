@@ -181,6 +181,7 @@ CONFIG
         The value "${site_config[database_port]}" should equal '5432'
         The value "${site_config[database_user]}" should equal 'dbuser'
         The value "${site_config[database_password]}" should equal 'dbpass'
+        The value "${site_config[database_explicit]}" should equal 'name type host port user password'
     End
 
     It 'parses database URL option'
@@ -192,6 +193,7 @@ CONFIG
 
         The status should be success
         The value "${site_config[database_url]}" should equal 'mysql://user:pass@localhost:3306/dbname'
+        The value "${site_config[database_explicit]:-}" should equal ''
     End
 
     It 'lowercases database type'

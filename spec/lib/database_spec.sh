@@ -158,7 +158,55 @@ Describe 'app::database::type'
     End
 End
 
-Describe 'app::database::load_url'
+Describe 'app::database::parse_url'
+    It 'parses URL into database_url_config'
+        When call app::database::parse_url 'postgresql://user:pass@db.example.com:5432/mydb'
+
+        The status should be success
+        The value "${database_url_config[type]}" should equal 'postgresql'
+        The value "${database_url_config[name]}" should equal 'mydb'
+        The value "${database_url_config[user]}" should equal 'user'
+        The value "${database_url_config[password]}" should equal 'pass'
+        The value "${database_url_config[host]}" should equal 'db.example.com'
+        The value "${database_url_config[port]}" should equal '5432'
+    End
+
+    It 'parses URL without credentials'
+        When call app::database::parse_url 'mysql://localhost/mydb'
+
+        The status should be success
+        The value "${database_url_config[type]}" should equal 'mysql'
+        The value "${database_url_config[name]}" should equal 'mydb'
+        The value "${database_url_config[user]:-}" should equal ''
+        The value "${database_url_config[password]:-}" should equal ''
+        The value "${database_url_config[host]}" should equal 'localhost'
+        The value "${database_url_config[port]:-}" should equal ''
+    End
+
+    It 'parses bracketed IPv6 host and port'
+        When call app::database::parse_url 'postgresql://user:pass@[::1]:5433/mydb'
+
+        The status should be success
+        The value "${database_url_config[host]}" should equal '::1'
+        The value "${database_url_config[port]}" should equal '5433'
+    End
+
+    It 'fails when URL has no protocol'
+        When run app::database::parse_url 'user:pass@localhost/mydb'
+
+        The status should be failure
+        The error should include 'Invalid database_url: user:pass@localhost/mydb'
+    End
+
+    It 'fails when URL protocol is not supported'
+        When run app::database::parse_url 'sqlite://user:pass@localhost/mydb'
+
+        The status should be failure
+        The error should include 'Invalid database_url protocol: sqlite'
+    End
+End
+
+Describe 'app::database::apply_url'
     beforeEach() {
         declare -gA site_config=()
     }
@@ -168,7 +216,7 @@ Describe 'app::database::load_url'
     It 'parses mysql database URL'
         site_config[database_url]='mysql://user:pass@localhost:3306/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'mysql'
@@ -182,7 +230,7 @@ Describe 'app::database::load_url'
     It 'parses mariadb database URL'
         site_config[database_url]='mariadb://user:pass@db.example.com:3307/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'mariadb'
@@ -194,7 +242,7 @@ Describe 'app::database::load_url'
     It 'parses postgresql database URL'
         site_config[database_url]='postgresql://user:pass@db.example.com:5432/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'postgresql'
@@ -208,7 +256,7 @@ Describe 'app::database::load_url'
     It 'parses URL without credentials'
         site_config[database_url]='postgresql://db.example.com/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'postgresql'
@@ -222,7 +270,7 @@ Describe 'app::database::load_url'
     It 'parses URL with password containing a colon'
         site_config[database_url]='mysql://user:pa:ss@localhost/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_user]}" should equal 'user'
@@ -232,7 +280,7 @@ Describe 'app::database::load_url'
     It 'lowercases database type from URL'
         site_config[database_url]='MySQL://user:pass@localhost/mydb'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'mysql'
@@ -240,6 +288,7 @@ Describe 'app::database::load_url'
 
     It 'prefers explicitly configured options over URL values'
         site_config[database_url]='mysql://user:pass@localhost:3306/urldb'
+        site_config[database_explicit]='type name user password host port'
         site_config[database_type]='postgresql'
         site_config[database_name]='configdb'
         site_config[database_user]='configuser'
@@ -247,7 +296,7 @@ Describe 'app::database::load_url'
         site_config[database_host]='confighost'
         site_config[database_port]='5432'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_type]}" should equal 'postgresql'
@@ -260,9 +309,10 @@ Describe 'app::database::load_url'
 
     It 'fills only options that are not configured explicitly'
         site_config[database_url]='postgresql://user:pass@db.example.com:5432/mydb'
+        site_config[database_explicit]='user'
         site_config[database_user]='configuser'
 
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${site_config[database_user]}" should equal 'configuser'
@@ -271,8 +321,26 @@ Describe 'app::database::load_url'
         The value "${site_config[database_port]}" should equal '5432'
     End
 
+    It 'reapplies changed URL values that were not configured explicitly'
+        site_config[database_url]='mysql://user:pass@localhost:3306/firstdb'
+
+        app::database::apply_url
+
+        site_config[database_url]='postgresql://other:secret@db.example.com:5432/seconddb'
+
+        When call app::database::apply_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+        The value "${site_config[database_name]}" should equal 'seconddb'
+        The value "${site_config[database_user]}" should equal 'other'
+        The value "${site_config[database_password]}" should equal 'secret'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '5432'
+    End
+
     It 'does nothing when database URL is not set'
-        When call app::database::load_url
+        When call app::database::apply_url
 
         The status should be success
         The value "${#site_config[@]}" should equal 0
@@ -281,7 +349,7 @@ Describe 'app::database::load_url'
     It 'fails when URL has no protocol'
         site_config[database_url]='user:pass@localhost/mydb'
 
-        When run app::database::load_url
+        When run app::database::apply_url
 
         The status should be failure
         The error should include 'Invalid database_url: user:pass@localhost/mydb'
@@ -290,7 +358,7 @@ Describe 'app::database::load_url'
     It 'fails when URL protocol is not supported'
         site_config[database_url]='sqlite://user:pass@localhost/mydb'
 
-        When run app::database::load_url
+        When run app::database::apply_url
 
         The status should be failure
         The error should include 'Invalid database_url protocol: sqlite'

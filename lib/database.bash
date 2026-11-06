@@ -160,12 +160,14 @@ ${site_config[database_port]:+port="${site_config[database_port]}"}
 EOF
 }
 
-# Applies values parsed from "database_url" to "site_config".
-# Explicitly configured database options take precedence over URL values.
-app::database::load_url() {
-    local url="${site_config[database_url]:-}"
+declare -gA database_url_config=()
 
-    [[ -z "${url}" ]] && return 0
+# Parses database URL into "database_url_config" associative array.
+# Keys: type, name, user, password, host, port.
+app::database::parse_url() {
+    local url="${1:-}"
+
+    database_url_config=()
 
     if [[ "${url}" != *'://'* ]]; then
         app::error::error "Invalid database_url: ${url}"
@@ -230,10 +232,31 @@ app::database::load_url() {
         host="${authority}"
     fi
 
-    [[ -v 'site_config[database_type]' ]] || site_config[database_type]="${type}"
-    [[ -v 'site_config[database_name]' ]] || site_config[database_name]="${name}"
-    [[ -v 'site_config[database_user]' ]] || site_config[database_user]="${user}"
-    [[ -v 'site_config[database_password]' ]] || site_config[database_password]="${password}"
-    [[ -v 'site_config[database_host]' ]] || site_config[database_host]="${host}"
-    [[ -v 'site_config[database_port]' ]] || site_config[database_port]="${port}"
+    database_url_config[type]="${type}"
+    database_url_config[name]="${name}"
+    database_url_config[user]="${user}"
+    database_url_config[password]="${password}"
+    database_url_config[host]="${host}"
+    database_url_config[port]="${port}"
+}
+
+# Applies values parsed from "database_url" to "site_config".
+# Explicitly configured database options take precedence over URL values.
+app::database::apply_url() {
+    local url="${site_config[database_url]:-}"
+
+    [[ -z "${url}" ]] && return 0
+
+    app::database::parse_url "${url}" || return 1
+
+    app::database::is_explicit 'type' || site_config[database_type]="${database_url_config[type]}"
+    app::database::is_explicit 'name' || site_config[database_name]="${database_url_config[name]}"
+    app::database::is_explicit 'user' || site_config[database_user]="${database_url_config[user]}"
+    app::database::is_explicit 'password' || site_config[database_password]="${database_url_config[password]}"
+    app::database::is_explicit 'host' || site_config[database_host]="${database_url_config[host]}"
+    app::database::is_explicit 'port' || site_config[database_port]="${database_url_config[port]}"
+}
+
+app::database::is_explicit() {
+    [[ " ${site_config[database_explicit]:-} " == *" ${1} "* ]]
 }
