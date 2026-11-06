@@ -107,8 +107,13 @@ app_backup_site_database() {
 
     local dump="$(command mktemp --suffix "${dump_file_suffix}")"
 
-    app::database::dump > "${dump}" \
-        && app_zip -j "${backup_file}" "${dump}"
+    if ! app::database::dump > "${dump}"; then
+        rm --force "${dump}"
+
+        return 1
+    fi
+
+    app_zip -j "${backup_file}" "${dump}"
 
     rm --force "${dump}"
 }

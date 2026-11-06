@@ -57,7 +57,7 @@ Exports the site's configured database to stdout as SQL. Fails if no database is
 rambo db:cli /path/to/site
 ```
 
-Opens an interactive MySQL shell using the site's configured credentials. Requires `mysql` CLI tool.
+Opens an interactive database shell using the site's configured credentials. Requires the matching client tool (`mysql`, `mariadb` or `psql`).
 
 ### detect
 
@@ -88,14 +88,40 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
 | `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
 | `database_name` | Database name for dump/restore operations | — | Local, main |
-| `database_user` | Database user for mysqldump/mysql auth | — | Local, main |
-| `database_password` | Database password for mysqldump/mysql auth | — | Local, main |
+| `database_type` | Database type: `mysql`, `mariadb` or `postgresql` | auto-detected | Local, main |
+| `database_host` | Database host | — | Local, main |
+| `database_port` | Database port | — | Local, main |
+| `database_user` | Database user for dump/cli auth | — | Local, main |
+| `database_password` | Database password for dump/cli auth | — | Local, main |
 | `database_dump_suffix` | Suffix appended to dump filenames (e.g. `.backup.sql`) | `.dump.sql` | Local, main |
 | `local_config_file_suffix` | Filename suffix searched for in site root (e.g. `.rambo.conf`) | `.rambo.conf` | Main config only |
 
 Repeatable keys (`exclude`, `include`) may appear multiple times — values accumulate.
 
 `root` key is valid **only** in main config files (passed as argument or via `/etc/rambo/…`). It is rejected in local `.rambo.conf` files.
+
+### Database types
+
+Supported database types: `mysql`, `mariadb`, `postgresql`.
+
+When `database_type` is not set, Rambo detects it by looking for installed dump tools, in this order:
+
+1. `mysqldump` — type `mysql`, or `mariadb` if the tool reports itself as MariaDB (on MariaDB systems `mysqldump` is usually a symlink to `mariadb-dump`)
+2. `mariadb-dump` — type `mariadb`
+3. `pg_dump` — type `postgresql`
+
+Within the MySQL family the tools are interchangeable: `mariadb-dump`/`mariadb` are used when `mysqldump`/`mysql` are not installed, and vice versa.
+
+Set `database_type` explicitly to skip detection:
+
+```sh
+database_type: postgresql
+database_name: dbname
+database_user: dbuser
+database_password: dbpass
+database_host: localhost
+database_port: 5432
+```
 
 ### Local config file (`.rambo.conf`)
 
