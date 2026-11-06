@@ -87,6 +87,7 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | `plugin` | Plugin name (auto-detected if omitted); must match an executable script name in plugin search paths | auto-detect | Local, main |
 | `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
 | `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
+| `database_url` | Database connection URL, e.g. `mysql://user:pass@localhost:3306/mydb` | — | Local, main |
 | `database_name` | Database name for dump/restore operations | — | Local, main |
 | `database_type` | Database type: `mysql`, `mariadb` or `postgresql` | auto-detected | Local, main |
 | `database_host` | Database host | — | Local, main |
@@ -121,6 +122,24 @@ database_user: dbuser
 database_password: dbpass
 database_host: localhost
 database_port: 5432
+```
+
+### Database URL
+
+Database connection settings can be provided as a single URL:
+
+```sh
+database_url: mysql://user:pass@localhost:3306/mydb
+```
+
+Supported protocols are `mysql`, `mariadb` and `postgresql`. The protocol determines `database_type`, and the URL components set `database_name`, `database_user`, `database_password`, `database_host` and `database_port`.
+
+Individual database options take precedence over values from `database_url` and can be used to override any extracted value:
+
+```sh
+database_url: mysql://user:pass@localhost:3306/mydb
+database_name: otherdb
+database_port: 3307
 ```
 
 ### Local config file (`.rambo.conf`)

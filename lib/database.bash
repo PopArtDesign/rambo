@@ -4,15 +4,15 @@ app::database::dump() {
     app::database::type || return 1
 
     case "${db_type}" in
-        mysql )
-            app::database::mysqldump --single-transaction --no-tablespaces "${site_config[database_name]}"
-            ;;
-        mariadb )
-            app::database::mariadb_dump --single-transaction "${site_config[database_name]}"
-            ;;
-        postgresql )
-            app::database::pg_dump "${site_config[database_name]}"
-            ;;
+    mysql)
+        app::database::mysqldump --single-transaction --no-tablespaces "${site_config[database_name]}"
+        ;;
+    mariadb)
+        app::database::mariadb_dump --single-transaction "${site_config[database_name]}"
+        ;;
+    postgresql)
+        app::database::pg_dump "${site_config[database_name]}"
+        ;;
     esac
 }
 
@@ -20,15 +20,15 @@ app::database::cli() {
     app::database::type || return 1
 
     case "${db_type}" in
-        mysql )
-            app::database::mysql "${site_config[database_name]}"
-            ;;
-        mariadb )
-            app::database::mariadb "${site_config[database_name]}"
-            ;;
-        postgresql )
-            app::database::psql "${site_config[database_name]}"
-            ;;
+    mysql)
+        app::database::mysql "${site_config[database_name]}"
+        ;;
+    mariadb)
+        app::database::mariadb "${site_config[database_name]}"
+        ;;
+    postgresql)
+        app::database::psql "${site_config[database_name]}"
+        ;;
     esac
 }
 
@@ -57,22 +57,22 @@ app::database::detect_type() {
     local candidate=''
 
     for candidate in mysqldump mariadb-dump pg_dump; do
-        command -v "${candidate}" > /dev/null 2>&1 || continue
+        command -v "${candidate}" >/dev/null 2>&1 || continue
 
         case "${candidate}" in
-            mysqldump )
-                if app::database::is_mariadb "${candidate}"; then
-                    echo 'mariadb'
-                else
-                    echo 'mysql'
-                fi
-                ;;
-            mariadb-dump )
+        mysqldump)
+            if app::database::is_mariadb "${candidate}"; then
                 echo 'mariadb'
-                ;;
-            pg_dump )
-                echo 'postgresql'
-                ;;
+            else
+                echo 'mysql'
+            fi
+            ;;
+        mariadb-dump)
+            echo 'mariadb'
+            ;;
+        pg_dump)
+            echo 'postgresql'
+            ;;
         esac
 
         return 0
@@ -85,7 +85,7 @@ app::database::detect_type() {
 app::database::is_mariadb() {
     local version=''
 
-    version="$("${1}" --version 2> /dev/null)" || version=''
+    version="$("${1}" --version 2>/dev/null)" || version=''
 
     [[ "${version,,}" == *mariadb* ]]
 }
@@ -93,7 +93,7 @@ app::database::is_mariadb() {
 app::database::mysqldump() {
     local binary='mysqldump'
 
-    command -v mysqldump > /dev/null 2>&1 || binary='mariadb-dump'
+    command -v mysqldump >/dev/null 2>&1 || binary='mariadb-dump'
 
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
@@ -101,7 +101,7 @@ app::database::mysqldump() {
 app::database::mysql() {
     local binary='mysql'
 
-    command -v mysql > /dev/null 2>&1 || binary='mariadb'
+    command -v mysql >/dev/null 2>&1 || binary='mariadb'
 
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
@@ -109,7 +109,7 @@ app::database::mysql() {
 app::database::mariadb_dump() {
     local binary='mariadb-dump'
 
-    command -v mariadb-dump > /dev/null 2>&1 || binary='mysqldump'
+    command -v mariadb-dump >/dev/null 2>&1 || binary='mysqldump'
 
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
@@ -117,7 +117,7 @@ app::database::mariadb_dump() {
 app::database::mariadb() {
     local binary='mariadb'
 
-    command -v mariadb > /dev/null 2>&1 || binary='mysql'
+    command -v mariadb >/dev/null 2>&1 || binary='mysql'
 
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
@@ -158,4 +158,82 @@ password="${site_config[database_password]:-}"
 ${site_config[database_host]:+host="${site_config[database_host]}"}
 ${site_config[database_port]:+port="${site_config[database_port]}"}
 EOF
+}
+
+# Applies values parsed from "database_url" to "site_config".
+# Explicitly configured database options take precedence over URL values.
+app::database::load_url() {
+    local url="${site_config[database_url]:-}"
+
+    [[ -z "${url}" ]] && return 0
+
+    if [[ "${url}" != *'://'* ]]; then
+        app::error::error "Invalid database_url: ${url}"
+
+        return 1
+    fi
+
+    local type="${url%%://*}"
+    local rest="${url#*://}"
+
+    case "${type,,}" in
+    mysql | mariadb | postgresql)
+        type="${type,,}"
+        ;;
+    *)
+        app::error::error "Invalid database_url protocol: ${type}"
+
+        return 1
+        ;;
+    esac
+
+    local userinfo=''
+
+    if [[ "${rest}" == *'@'* ]]; then
+        userinfo="${rest%@*}"
+        rest="${rest##*@}"
+    fi
+
+    local authority="${rest%%/*}"
+    local name="${rest#"${authority}"}"
+
+    name="${name#/}"
+    name="${name%%\?*}"
+    name="${name%%#*}"
+
+    local user=''
+    local password=''
+
+    if [[ -n "${userinfo}" ]]; then
+        if [[ "${userinfo}" == *':'* ]]; then
+            user="${userinfo%%:*}"
+            password="${userinfo#*:}"
+        else
+            user="${userinfo}"
+        fi
+    fi
+
+    local host=''
+    local port=''
+
+    if [[ "${authority}" == \[*\]* ]]; then
+        host="${authority#\[}"
+        host="${host%%\]*}"
+
+        local address_suffix="${authority#*\]}"
+
+        [[ "${address_suffix}" == :* ]] && port="${address_suffix#:}"
+    elif [[ "${authority}" == *':'* ]]; then
+        host="${authority%%:*}"
+        port="${authority#*:}"
+    else
+        host="${authority}"
+    fi
+
+    [[ -v 'site_config[database_type]' ]] || site_config[database_type]="${type}"
+    [[ -v 'site_config[database_name]' ]] || site_config[database_name]="${name}"
+    [[ -v 'site_config[database_user]' ]] || site_config[database_user]="${user}"
+    [[ -v 'site_config[database_password]' ]] || site_config[database_password]="${password}"
+    [[ -v 'site_config[database_host]' ]] || site_config[database_host]="${host}"
+    [[ -v 'site_config[database_port]' ]] || site_config[database_port]="${port}"
 }

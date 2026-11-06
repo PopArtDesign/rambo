@@ -1,3 +1,4 @@
+app::use 'database'
 app::use 'error'
 app::use 'plugin'
 app::use 'util'
@@ -8,6 +9,8 @@ app::site::load_site_config() {
     app::site::load_local_config
 
     app::site::load_plugin_config
+
+    app::database::load_url
 }
 
 app::site::load_main_config() {
@@ -150,6 +153,9 @@ app::site::load_config() {
                 ;;
             database_name )
                 site_config[database_name]="${value}"
+                ;;
+            database_url )
+                site_config[database_url]="${value}"
                 ;;
             database_type )
                 case "${value,,}" in

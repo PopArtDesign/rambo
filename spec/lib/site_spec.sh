@@ -183,6 +183,17 @@ CONFIG
         The value "${site_config[database_password]}" should equal 'dbpass'
     End
 
+    It 'parses database URL option'
+        Data:raw
+            #|database_url: mysql://user:pass@localhost:3306/dbname
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[database_url]}" should equal 'mysql://user:pass@localhost:3306/dbname'
+    End
+
     It 'lowercases database type'
         Data:raw
             #|database_type: MySQL

@@ -158,6 +158,145 @@ Describe 'app::database::type'
     End
 End
 
+Describe 'app::database::load_url'
+    beforeEach() {
+        declare -gA site_config=()
+    }
+
+    BeforeEach 'beforeEach'
+
+    It 'parses mysql database URL'
+        site_config[database_url]='mysql://user:pass@localhost:3306/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'mysql'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_user]}" should equal 'user'
+        The value "${site_config[database_password]}" should equal 'pass'
+        The value "${site_config[database_host]}" should equal 'localhost'
+        The value "${site_config[database_port]}" should equal '3306'
+    End
+
+    It 'parses mariadb database URL'
+        site_config[database_url]='mariadb://user:pass@db.example.com:3307/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'mariadb'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '3307'
+    End
+
+    It 'parses postgresql database URL'
+        site_config[database_url]='postgresql://user:pass@db.example.com:5432/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_user]}" should equal 'user'
+        The value "${site_config[database_password]}" should equal 'pass'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '5432'
+    End
+
+    It 'parses URL without credentials'
+        site_config[database_url]='postgresql://db.example.com/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_user]:-}" should equal ''
+        The value "${site_config[database_password]:-}" should equal ''
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]:-}" should equal ''
+    End
+
+    It 'parses URL with password containing a colon'
+        site_config[database_url]='mysql://user:pa:ss@localhost/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_user]}" should equal 'user'
+        The value "${site_config[database_password]}" should equal 'pa:ss'
+    End
+
+    It 'lowercases database type from URL'
+        site_config[database_url]='MySQL://user:pass@localhost/mydb'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'mysql'
+    End
+
+    It 'prefers explicitly configured options over URL values'
+        site_config[database_url]='mysql://user:pass@localhost:3306/urldb'
+        site_config[database_type]='postgresql'
+        site_config[database_name]='configdb'
+        site_config[database_user]='configuser'
+        site_config[database_password]='configpass'
+        site_config[database_host]='confighost'
+        site_config[database_port]='5432'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+        The value "${site_config[database_name]}" should equal 'configdb'
+        The value "${site_config[database_user]}" should equal 'configuser'
+        The value "${site_config[database_password]}" should equal 'configpass'
+        The value "${site_config[database_host]}" should equal 'confighost'
+        The value "${site_config[database_port]}" should equal '5432'
+    End
+
+    It 'fills only options that are not configured explicitly'
+        site_config[database_url]='postgresql://user:pass@db.example.com:5432/mydb'
+        site_config[database_user]='configuser'
+
+        When call app::database::load_url
+
+        The status should be success
+        The value "${site_config[database_user]}" should equal 'configuser'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '5432'
+    End
+
+    It 'does nothing when database URL is not set'
+        When call app::database::load_url
+
+        The status should be success
+        The value "${#site_config[@]}" should equal 0
+    End
+
+    It 'fails when URL has no protocol'
+        site_config[database_url]='user:pass@localhost/mydb'
+
+        When run app::database::load_url
+
+        The status should be failure
+        The error should include 'Invalid database_url: user:pass@localhost/mydb'
+    End
+
+    It 'fails when URL protocol is not supported'
+        site_config[database_url]='sqlite://user:pass@localhost/mydb'
+
+        When run app::database::load_url
+
+        The status should be failure
+        The error should include 'Invalid database_url protocol: sqlite'
+    End
+End
+
 Describe 'app::database::dump'
     beforeEach() {
         declare -gA site_config=(
