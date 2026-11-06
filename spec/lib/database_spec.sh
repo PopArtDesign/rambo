@@ -202,17 +202,13 @@ Describe 'app::database::dump'
     It 'falls back to mariadb-dump when mysqldump is not installed'
         site_config[database_type]='mysql'
 
-        dir="${SHELLSPEC_TMPBASE}/mariadb-only-bin"
+        Mock mariadb-dump
+            echo "$@"
+        End
 
-        rm -rf "${dir}"
-        mkdir -p "${dir}"
-
-        echo '#!/bin/bash' > "${dir}/mariadb-dump"
-        echo 'echo "$@"' >> "${dir}/mariadb-dump"
-
-        chmod +x "${dir}/mariadb-dump"
-
-        PATH="${dir}:/usr/bin:/bin"
+        # Restrict PATH to ShellSpec's mock and support directories so the real
+        # mysqldump installed on the runner image can not leak into the test.
+        PATH="${SHELLSPEC_MOCK_BINDIR}:${SHELLSPEC_SUPPORT_BINDIR}"
 
         When call app::database::dump
 
@@ -281,17 +277,12 @@ Describe 'app::database::cli'
     It 'falls back to mariadb client when mysql is not installed'
         site_config[database_type]='mysql'
 
-        dir="${SHELLSPEC_TMPBASE}/mariadb-client-only-bin"
+        Mock mariadb
+            echo "$@"
+        End
 
-        rm -rf "${dir}"
-        mkdir -p "${dir}"
-
-        echo '#!/bin/bash' > "${dir}/mariadb"
-        echo 'echo "$@"' >> "${dir}/mariadb"
-
-        chmod +x "${dir}/mariadb"
-
-        PATH="${dir}:/usr/bin:/bin"
+        # See the note in app::database::dump fallback test above.
+        PATH="${SHELLSPEC_MOCK_BINDIR}:${SHELLSPEC_SUPPORT_BINDIR}"
 
         When call app::database::cli
 
