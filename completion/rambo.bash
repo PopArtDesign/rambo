@@ -77,6 +77,22 @@ _rambo_complete_zip() {
     compopt -o filenames 2>/dev/null || true
 }
 
+# Readline splits words on every character in COMP_WORDBREAKS, including ":".
+# It replaces only the part after the last break, so replies for "db:" must be
+# trimmed back to the part after that colon or "db:dump" turns into
+# "db:db:dump".
+_rambo_complete_trim_colon() {
+    local cur="${1}" colon_word i
+
+    [[ "${COMP_WORDBREAKS}" == *:* && "${cur}" == *:* ]] || return 0
+
+    colon_word="${cur%${cur##*:}}"
+
+    for i in "${!COMPREPLY[@]}"; do
+        COMPREPLY[i]="${COMPREPLY[i]#"${colon_word}"}"
+    done
+}
+
 _rambo() {
     local char cmd cur i idx line noopts opts quote word
     local -a positional=() words=()
@@ -181,6 +197,8 @@ _rambo() {
             [[ "${#positional[@]}" -eq 0 ]] && mapfile -t COMPREPLY < <(compgen -W "$(_rambo_command_list)" -- "${cur}")
             ;;
     esac
+
+    _rambo_complete_trim_colon "${cur}"
 }
 
 complete -F _rambo rambo
