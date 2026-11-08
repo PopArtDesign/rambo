@@ -13,21 +13,6 @@ app::site::load_site_config() {
     app::site::finalize_config
 }
 
-# Resolves values that depend on all configuration sources being loaded.
-app::site::finalize_config() {
-    if [[ -z "${site_config[database_type]:-}" && -n "${site_config[database_name]:-}" ]]; then
-        local detected=''
-
-        if detected="$(app::database::detect_type)"; then
-            site_config[database_type]="${detected}"
-        else
-            app::error::error 'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
-
-            return 1
-        fi
-    fi
-}
-
 app::site::load_main_config() {
     local site_path="${1:-/dev/stdin}"
 
@@ -206,6 +191,21 @@ app::site::load_config() {
                 ;;
         esac
     done
+}
+
+# Resolves values that depend on all configuration sources being loaded.
+app::site::finalize_config() {
+    if [[ -z "${site_config[database_type]:-}" && -n "${site_config[database_name]:-}" ]]; then
+        local detected=''
+
+        if detected="$(app::database::detect_type)"; then
+            site_config[database_type]="${detected}"
+        else
+            app::error::error 'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
+
+            return 1
+        fi
+    fi
 }
 
 app::site::check_site_root_exists_and_readable() {
