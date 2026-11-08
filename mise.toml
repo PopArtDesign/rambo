@@ -11,3 +11,4 @@ test = "shellspec"
 lint = "shellcheck --severity=error {{vars.scripts}}"
 fmt = "shfmt -w {{vars.scripts}}"
 fmt-check = "shfmt -d {{vars.scripts}}"
+build = [{ task = "lint" }, { task = "fmt-check" }, { task = "test" }]
