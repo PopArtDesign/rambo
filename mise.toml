@@ -9,5 +9,5 @@ scripts = "bin/* command/* common.bash completion/*.bash lib/*.bash plugin/*"
 [tasks]
 test = "shellspec"
 lint = "shellcheck --severity=error {{vars.scripts}}"
-fmt = "shfmt {{vars.scripts}}"
+fmt = "shfmt -w {{vars.scripts}}"
 fmt-check = "shfmt -d {{vars.scripts}}"

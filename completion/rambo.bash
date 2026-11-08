@@ -49,9 +49,9 @@ _rambo_command_list() {
 
 _rambo_options() {
     case "${1}" in
-        backup | restore | detect | db:dump | db:cli) printf '%s' '-h --help' ;;
-        plugins) printf '%s' '-a --all -p --paths -h --help' ;;
-        '') printf '%s' '-h --help' ;;
+    backup | restore | detect | db:dump | db:cli) printf '%s' '-h --help' ;;
+    plugins) printf '%s' '-a --all -p --paths -h --help' ;;
+    '') printf '%s' '-h --help' ;;
     esac
 }
 
@@ -117,18 +117,18 @@ _rambo() {
             fi
         else
             case "${char}" in
-                "'" | '"') quote="${char}" ;;
-                '\')
-                    i=$((i + 1))
-                    word+="${line:i:1}"
-                    ;;
-                ' ' | $'\t')
-                    if [[ -n "${word}" ]]; then
-                        words+=("${word}")
-                        word=''
-                    fi
-                    ;;
-                *) word+="${char}" ;;
+            "'" | '"') quote="${char}" ;;
+            '\')
+                i=$((i + 1))
+                word+="${line:i:1}"
+                ;;
+            ' ' | $'\t')
+                if [[ -n "${word}" ]]; then
+                    words+=("${word}")
+                    word=''
+                fi
+                ;;
+            *) word+="${char}" ;;
             esac
         fi
     done
@@ -175,27 +175,27 @@ _rambo() {
     fi
 
     case "${cmd}" in
-        '')
-            mapfile -t COMPREPLY < <(compgen -W "$(_rambo_command_list)" -- "${cur}")
+    '')
+        mapfile -t COMPREPLY < <(compgen -W "$(_rambo_command_list)" -- "${cur}")
+        ;;
+    backup | restore)
+        case "${#positional[@]}" in
+        0) _rambo_complete_path "${cur}" ;;
+        1)
+            if [[ "${cmd}" == 'restore' ]]; then
+                _rambo_complete_zip "${cur}"
+            else
+                _rambo_complete_path "${cur}"
+            fi
             ;;
-        backup | restore)
-            case "${#positional[@]}" in
-                0) _rambo_complete_path "${cur}" ;;
-                1)
-                    if [[ "${cmd}" == 'restore' ]]; then
-                        _rambo_complete_zip "${cur}"
-                    else
-                        _rambo_complete_path "${cur}"
-                    fi
-                    ;;
-            esac
-            ;;
-        detect | db:dump | db:cli)
-            [[ "${#positional[@]}" -eq 0 ]] && _rambo_complete_path "${cur}"
-            ;;
-        help)
-            [[ "${#positional[@]}" -eq 0 ]] && mapfile -t COMPREPLY < <(compgen -W "$(_rambo_command_list)" -- "${cur}")
-            ;;
+        esac
+        ;;
+    detect | db:dump | db:cli)
+        [[ "${#positional[@]}" -eq 0 ]] && _rambo_complete_path "${cur}"
+        ;;
+    help)
+        [[ "${#positional[@]}" -eq 0 ]] && mapfile -t COMPREPLY < <(compgen -W "$(_rambo_command_list)" -- "${cur}")
+        ;;
     esac
 
     _rambo_complete_trim_colon "${cur}"

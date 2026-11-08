@@ -40,7 +40,7 @@ app::site::load_main_config() {
     fi
 
     site_config[main_config_file]="${site_path}"
-    app::site::load_config "${site_path}" 'main' < "${site_path}"
+    app::site::load_config "${site_path}" 'main' <"${site_path}"
 
     if [[ -z "${site_config[root]:-}" ]]; then
         app::error::error "${site_path}: site root is not set"
@@ -118,7 +118,7 @@ app::site::load_local_config() {
 
     site_config[local_config_file]="$(app::util::realpath "${config_files[0]}")"
 
-    app::site::load_config "${site_config[local_config_file]}" 'local' < "${site_config[local_config_file]}"
+    app::site::load_config "${site_config[local_config_file]}" 'local' <"${site_config[local_config_file]}"
 }
 
 app::site::load_config() {
@@ -127,68 +127,68 @@ app::site::load_config() {
 
     while IFS=': ' read -r key value; do
         case "${key}" in
-            root )
-                [[ "${context}" != 'main' ]] && app::error::error \
-                    "${src}: key \"${key}\" allowed only in main config file"
+        root)
+            [[ "${context}" != 'main' ]] && app::error::error \
+                "${src}: key \"${key}\" allowed only in main config file"
 
-                site_config[root]="${value}"
-                ;;
-            local_config_file_suffix )
-                [[ "${context}" != 'main' ]] && app::error::error \
-                    "${src}: key \"${key}\" allowed only in main config file"
+            site_config[root]="${value}"
+            ;;
+        local_config_file_suffix)
+            [[ "${context}" != 'main' ]] && app::error::error \
+                "${src}: key \"${key}\" allowed only in main config file"
 
-                site_config[local_config_file_suffix]="${value}"
-                ;;
-            plugin )
-                [[ "${context}" == 'plugin' ]] && app::error::error \
-                    "${src}: key \"${key}\" not allowed for plugins"
+            site_config[local_config_file_suffix]="${value}"
+            ;;
+        plugin)
+            [[ "${context}" == 'plugin' ]] && app::error::error \
+                "${src}: key \"${key}\" not allowed for plugins"
 
-                site_config[plugin]="${value}"
+            site_config[plugin]="${value}"
+            ;;
+        exclude)
+            site_config[exclude]+="${site_config[exclude]:+ }${value}"
+            ;;
+        include)
+            site_config[include]+="${site_config[include]:+ }${value}"
+            ;;
+        database_name)
+            site_config[database_name]="${value}"
+            ;;
+        database_url)
+            app::database::apply_url "${value}" || app::error::error \
+                "${src}: invalid database_url: ${value}"
+            ;;
+        database_type)
+            case "${value,,}" in
+            mysql | mariadb | postgresql)
+                site_config[database_type]="${value,,}"
                 ;;
-            exclude )
-                site_config[exclude]+="${site_config[exclude]:+ }${value}"
+            *)
+                app::error::error "${src}: invalid database_type: ${value}"
                 ;;
-            include )
-                site_config[include]+="${site_config[include]:+ }${value}"
-                ;;
-            database_name )
-                site_config[database_name]="${value}"
-                ;;
-            database_url )
-                app::database::apply_url "${value}" || app::error::error \
-                    "${src}: invalid database_url: ${value}"
-                ;;
-            database_type )
-                case "${value,,}" in
-                    mysql|mariadb|postgresql )
-                        site_config[database_type]="${value,,}"
-                        ;;
-                    * )
-                        app::error::error "${src}: invalid database_type: ${value}"
-                        ;;
-                esac
-                ;;
-            database_host )
-                site_config[database_host]="${value}"
-                ;;
-            database_port )
-                site_config[database_port]="${value}"
-                ;;
-            database_user )
-                site_config[database_user]="${value}"
-                ;;
-            database_password )
-                site_config[database_password]="${value}"
-                ;;
-            database_dump_suffix )
-                site_config[database_dump_suffix]="${value}"
-                ;;
-            ''|'#' )
-                continue
-                ;;
-            * )
-                app::error::error "${src}: invalid key: ${key}"
-                ;;
+            esac
+            ;;
+        database_host)
+            site_config[database_host]="${value}"
+            ;;
+        database_port)
+            site_config[database_port]="${value}"
+            ;;
+        database_user)
+            site_config[database_user]="${value}"
+            ;;
+        database_password)
+            site_config[database_password]="${value}"
+            ;;
+        database_dump_suffix)
+            site_config[database_dump_suffix]="${value}"
+            ;;
+        '' | '#')
+            continue
+            ;;
+        *)
+            app::error::error "${src}: invalid key: ${key}"
+            ;;
         esac
     done
 }

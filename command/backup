@@ -11,10 +11,10 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
-            -h | --help ) opt_help=true ;;
-            -- ) shift && break ;;
-            -?* ) app::error::unknown_option "${1}" ;;
-            * ) break
+        -h | --help) opt_help=true ;;
+        --) shift && break ;;
+        -?*) app::error::unknown_option "${1}" ;;
+        *) break ;;
         esac
 
         shift
@@ -81,7 +81,7 @@ app_backup_site_files() {
     local exclude="${site_config[exclude]:-}"
 
     set -o noglob
-    pushd "${site_path}" > /dev/null
+    pushd "${site_path}" >/dev/null
 
     if [[ -z "${exclude}${include}" ]]; then
         app_zip "${backup_file}" .
@@ -96,7 +96,7 @@ app_backup_site_files() {
     fi
 
     set +o noglob
-    popd > /dev/null
+    popd >/dev/null
 }
 
 app_backup_site_database() {
@@ -107,7 +107,7 @@ app_backup_site_database() {
 
     local dump="$(command mktemp --suffix "${dump_file_suffix}")"
 
-    if ! app::database::dump > "${dump}"; then
+    if ! app::database::dump >"${dump}"; then
         rm --force "${dump}"
 
         return 1

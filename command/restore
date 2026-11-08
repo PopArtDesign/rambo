@@ -12,10 +12,10 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
-            -h | --help ) opt_help=true ;;
-            -- ) shift && break ;;
-            -?* ) app::error::unknown_option "${1}" ;;
-            * ) break
+        -h | --help) opt_help=true ;;
+        --) shift && break ;;
+        -?*) app::error::unknown_option "${1}" ;;
+        *) break ;;
         esac
 
         shift
@@ -101,7 +101,7 @@ app_restore_site_database() {
         return
     fi
 
-    app::database::cli < "${dump}"
+    app::database::cli <"${dump}"
 
     command rm --force "${dump}"
 }

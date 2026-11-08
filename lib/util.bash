@@ -15,10 +15,10 @@ app::util::realpath() {
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
-            -w | --working-dir ) working_dir="${2}" && shift ;;
-            -- ) shift && break ;;
-            -* ) opts+=("${1}") ;;
-            * ) break
+        -w | --working-dir) working_dir="${2}" && shift ;;
+        --) shift && break ;;
+        -*) opts+=("${1}") ;;
+        *) break ;;
         esac
 
         shift

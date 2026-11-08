@@ -12,12 +12,12 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
-            -a | --all ) opt_all=true ;;
-            -p | --paths ) opt_paths=true ;;
-            -h | --help ) opt_help=true ;;
-            -- ) shift && break ;;
-            -* ) app::error::unknown_option "${1}" ;;
-            * ) break
+        -a | --all) opt_all=true ;;
+        -p | --paths) opt_paths=true ;;
+        -h | --help) opt_help=true ;;
+        --) shift && break ;;
+        -*) app::error::unknown_option "${1}" ;;
+        *) break ;;
         esac
 
         shift
