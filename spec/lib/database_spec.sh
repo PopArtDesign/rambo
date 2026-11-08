@@ -111,13 +111,13 @@ Describe 'app::database::require_type'
 
     BeforeEach 'beforeEach'
 
-    It 'prints configured database type'
+    It 'succeeds when database type is configured'
         site_config[database_type]='postgresql'
 
         When call app::database::require_type
 
         The status should be success
-        The output should equal 'postgresql'
+        The output should equal ''
     End
 
     It 'fails when database type is not configured'

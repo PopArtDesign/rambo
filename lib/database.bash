@@ -2,11 +2,9 @@ app::use 'error'
 app::use 'util'
 
 app::database::dump() {
-    local db_type=''
+    app::database::require_type || return 1
 
-    db_type="$(app::database::require_type)" || return 1
-
-    case "${db_type}" in
+    case "${site_config[database_type]}" in
     mysql)
         app::database::mysqldump --single-transaction --no-tablespaces "${site_config[database_name]}"
         ;;
@@ -20,11 +18,9 @@ app::database::dump() {
 }
 
 app::database::cli() {
-    local db_type=''
+    app::database::require_type || return 1
 
-    db_type="$(app::database::require_type)" || return 1
-
-    case "${db_type}" in
+    case "${site_config[database_type]}" in
     mysql)
         app::database::mysql "${site_config[database_name]}"
         ;;
@@ -37,17 +33,13 @@ app::database::cli() {
     esac
 }
 
-# Prints configured database type or fails when it is not available.
+# Validates that database type is configured. Callers read site_config directly.
 app::database::require_type() {
-    local type="${site_config[database_type]:-}"
-
-    if [[ -z "${type}" ]]; then
+    if [[ -z "${site_config[database_type]:-}" ]]; then
         app::error::error 'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
 
         return 1
     fi
-
-    printf '%s\n' "${type}"
 }
 
 # Prints detected database type (empty string and failure if nothing detected).
