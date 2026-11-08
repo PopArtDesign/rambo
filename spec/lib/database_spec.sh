@@ -104,79 +104,27 @@ Describe 'app::database::detect_type'
     End
 End
 
-Describe 'app::database::type'
+Describe 'app::database::require_type'
     beforeEach() {
         declare -gA site_config=()
     }
 
     BeforeEach 'beforeEach'
 
-    It 'uses configured database type'
+    It 'prints configured database type'
         site_config[database_type]='postgresql'
 
-        When call app::database::type
+        When call app::database::require_type
 
         The status should be success
         The output should equal 'postgresql'
     End
 
-    It 'detects database type when it is not configured'
-        dir="${SHELLSPEC_TMPBASE}/fake-bin-type"
-
-        rm -rf "${dir}"
-        mkdir -p "${dir}"
-
-        {
-            echo '#!/bin/bash'
-            echo 'echo "pg_dump (PostgreSQL) 16.2"'
-        } > "${dir}/pg_dump"
-
-        chmod +x "${dir}/pg_dump"
-
-        PATH="${dir}"
-
-        When call app::database::type
-
-        The status should be success
-        The output should equal 'postgresql'
-        The value "${site_config[database_type]:-}" should equal ''
-    End
-
-    It 'fails when database type cannot be detected'
-        dir="${SHELLSPEC_TMPBASE}/empty-bin"
-
-        rm -rf "${dir}"
-        mkdir -p "${dir}"
-
-        PATH="${dir}"
-
-        When run app::database::type
+    It 'fails when database type is not configured'
+        When run app::database::require_type
 
         The status should be failure
         The error should include 'Database type not detected'
-    End
-
-    It 'fails quietly in quiet mode when database type cannot be detected'
-        dir="${SHELLSPEC_TMPBASE}/empty-bin-quiet"
-
-        rm -rf "${dir}"
-        mkdir -p "${dir}"
-
-        PATH="${dir}"
-
-        When run app::database::type --quiet
-
-        The status should be failure
-        The error should equal ''
-    End
-
-    It 'accepts quiet mode when database type is configured'
-        site_config[database_type]='postgresql'
-
-        When call app::database::type --quiet
-
-        The status should be success
-        The output should equal 'postgresql'
     End
 End
 

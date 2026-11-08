@@ -4,7 +4,7 @@ app::use 'util'
 app::database::dump() {
     local db_type=''
 
-    db_type="$(app::database::type)" || return 1
+    db_type="$(app::database::require_type)" || return 1
 
     case "${db_type}" in
     mysql)
@@ -22,7 +22,7 @@ app::database::dump() {
 app::database::cli() {
     local db_type=''
 
-    db_type="$(app::database::type)" || return 1
+    db_type="$(app::database::require_type)" || return 1
 
     case "${db_type}" in
     mysql)
@@ -37,26 +37,14 @@ app::database::cli() {
     esac
 }
 
-# Prints resolved database type: configured value wins, otherwise detected.
-# Use --quiet to fail without printing an error when nothing is detected.
-app::database::type() {
-    local quiet=false
-
-    case "${1:-}" in
-    -q | --quiet ) quiet=true ;;
-    esac
-
+# Prints configured database type or fails when it is not available.
+app::database::require_type() {
     local type="${site_config[database_type]:-}"
 
     if [[ -z "${type}" ]]; then
-        type="$(app::database::detect_type)" || type=''
+        app::error::error 'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
 
-        if [[ -z "${type}" ]]; then
-            [[ "${quiet}" == 'false' ]] && app::error::error \
-                'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
-
-            return 1
-        fi
+        return 1
     fi
 
     printf '%s\n' "${type}"

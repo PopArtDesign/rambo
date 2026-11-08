@@ -338,3 +338,87 @@ CONFIG
         The error should include '/var/www/mysite/xxx.rambo.conf: key "local_config_file_suffix" allowed only in main config file'
     End
 End
+
+Describe 'app::site::finalize_config'
+    Set 'errexit:on'
+
+    beforeEach() {
+        declare -gA site_config=()
+    }
+
+    BeforeEach 'beforeEach'
+
+    It 'keeps configured database type'
+        dir="${SHELLSPEC_TMPBASE}/empty-bin-finalize"
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        PATH="${dir}"
+
+        site_config[database_name]='dbname'
+        site_config[database_type]='postgresql'
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+    End
+
+    It 'detects database type when database name is set'
+        dir="${SHELLSPEC_TMPBASE}/fake-bin-finalize"
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        {
+            echo '#!/bin/bash'
+            echo 'echo "pg_dump (PostgreSQL) 16.2"'
+        } > "${dir}/pg_dump"
+
+        chmod +x "${dir}/pg_dump"
+
+        PATH="${dir}"
+
+        site_config[database_name]='dbname'
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+    End
+
+    It 'skips detection when database name is not set'
+        dir="${SHELLSPEC_TMPBASE}/fake-bin-finalize-no-db"
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        {
+            echo '#!/bin/bash'
+            echo 'echo "mysqldump  Ver 8.0.36 for Linux on x86_64"'
+        } > "${dir}/mysqldump"
+
+        chmod +x "${dir}/mysqldump"
+
+        PATH="${dir}"
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[database_type]:-}" should equal ''
+    End
+
+    It 'fails when database type cannot be detected'
+        dir="${SHELLSPEC_TMPBASE}/empty-bin-finalize-no-tools"
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        PATH="${dir}"
+
+        site_config[database_name]='dbname'
+
+        When run app::site::finalize_config
+
+        The status should be failure
+        The error should include 'Database type not detected'
+        The value "${site_config[database_type]:-}" should equal ''
+    End
+End

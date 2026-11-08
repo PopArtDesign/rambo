@@ -9,6 +9,23 @@ app::site::load_site_config() {
     app::site::load_local_config
 
     app::site::load_plugin_config
+
+    app::site::finalize_config
+}
+
+# Resolves values that depend on all configuration sources being loaded.
+app::site::finalize_config() {
+    if [[ -z "${site_config[database_type]:-}" && -n "${site_config[database_name]:-}" ]]; then
+        local detected=''
+
+        if detected="$(app::database::detect_type)"; then
+            site_config[database_type]="${detected}"
+        else
+            app::error::error 'Database type not detected. Set "database_type" config key or install mysqldump, mariadb-dump or pg_dump'
+
+            return 1
+        fi
+    fi
 }
 
 app::site::load_main_config() {
