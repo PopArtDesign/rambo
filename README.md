@@ -224,6 +224,7 @@ Example — the built-in WordPress plugin reads `wp-config.php`:
 
 cat <<CONFIG                              # pass config via stdout
 exclude: /wp-content/cache/*
+database_type: mysql
 CONFIG
 
 sed -nE \

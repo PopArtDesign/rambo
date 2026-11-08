@@ -25,6 +25,7 @@ Describe 'WordPress plugin'
 
         The status should be success
         The output should include 'exclude: /wp-content/cache/*'
+        The output should include 'database_type: mysql'
         The output should include 'database_name: wordpress-database'
         The output should include 'database_user: wordpress-user'
         The output should include 'database_password: wordpress-password'

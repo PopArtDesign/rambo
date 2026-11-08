@@ -4,6 +4,7 @@
 
 cat <<CONFIG
 exclude: /wp-content/cache/*
+database_type: mysql
 CONFIG
 
 sed -nE \
