@@ -43,7 +43,7 @@ main() {
     local db_type="${site_config[database_type]:-}"
 
     if [[ -z "${db_type}" && -n "${site_config[database_name]:-}" ]]; then
-        db_type="$(app::database::detect_type || true)"
+        db_type="$(app::database::type --quiet)" || true
     fi
 
     app_header 'Plugin'

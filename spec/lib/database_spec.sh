@@ -107,7 +107,6 @@ End
 Describe 'app::database::type'
     beforeEach() {
         declare -gA site_config=()
-        declare -g db_type=''
     }
 
     BeforeEach 'beforeEach'
@@ -118,7 +117,7 @@ Describe 'app::database::type'
         When call app::database::type
 
         The status should be success
-        The value "${db_type}" should equal 'postgresql'
+        The output should equal 'postgresql'
     End
 
     It 'detects database type when it is not configured'
@@ -139,8 +138,8 @@ Describe 'app::database::type'
         When call app::database::type
 
         The status should be success
-        The value "${db_type}" should equal 'postgresql'
-        The value "${site_config[database_type]}" should equal 'postgresql'
+        The output should equal 'postgresql'
+        The value "${site_config[database_type]:-}" should equal ''
     End
 
     It 'fails when database type cannot be detected'
@@ -155,6 +154,29 @@ Describe 'app::database::type'
 
         The status should be failure
         The error should include 'Database type not detected'
+    End
+
+    It 'fails quietly in quiet mode when database type cannot be detected'
+        dir="${SHELLSPEC_TMPBASE}/empty-bin-quiet"
+
+        rm -rf "${dir}"
+        mkdir -p "${dir}"
+
+        PATH="${dir}"
+
+        When run app::database::type --quiet
+
+        The status should be failure
+        The error should equal ''
+    End
+
+    It 'accepts quiet mode when database type is configured'
+        site_config[database_type]='postgresql'
+
+        When call app::database::type --quiet
+
+        The status should be success
+        The output should equal 'postgresql'
     End
 End
 
@@ -292,7 +314,6 @@ Describe 'app::database::dump'
             [database_user]='test-user'
             [database_password]='test-password'
         )
-        declare -g db_type=''
     }
 
     BeforeEach 'beforeEach'
@@ -370,7 +391,6 @@ Describe 'app::database::cli'
             [database_user]='test-user'
             [database_password]='test-password'
         )
-        declare -g db_type=''
     }
 
     BeforeEach 'beforeEach'
