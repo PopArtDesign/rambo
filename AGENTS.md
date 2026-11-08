@@ -29,7 +29,7 @@ Bash backup tool for Joomla, WordPress & static sites.
 
 ## Testing
 
-Requires Shellspec (see `mise.toml`). CI installs via `curl -fsSL https://git.io/shellspec | sh -s -- --yes`. No deps beyond `bash`, `zip`, `unzip`, and optional DB tools (`mysqldump`, `mariadb-dump`, `pg_dump`, `mysql`, `mariadb`, `psql`).
+Requires Shellspec (see `mise.toml`). CI installs it via `jdx/mise-action`. No deps beyond `bash`, `zip`, `unzip`, and optional DB tools (`mysqldump`, `mariadb-dump`, `pg_dump`, `mysql`, `mariadb`, `psql`).
 
 ```sh
 shellspec                              # run all tests
