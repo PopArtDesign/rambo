@@ -273,14 +273,20 @@ When no installed plugin recognizes the site, Rambo falls back to `default`. Thi
 Local (`~/.local`):
 
 ```sh
-unlink ~/.local/bin/rambo; rm -rf ~/.local/lib/rambo
+unlink ~/.local/bin/rambo
+rm -rf ~/.local/lib/rambo
+rm -f ~/.local/share/bash-completion/completions/rambo
 ```
 
 Global (`/opt`):
 
 ```sh
-sudo unlink /usr/local/bin/rambo; sudo rm -rf /opt/rambo
+sudo unlink /usr/local/bin/rambo
+sudo rm -rf /opt/rambo
+sudo rm -f /usr/share/bash-completion/completions/rambo
 ```
+
+If you sourced the completion script from `~/.bashrc` instead, remove that `source` line.
 
 ## License
 
