@@ -33,12 +33,7 @@ Describe 'Joomla plugin'
     End
 
     It 'detects PostgreSQL database type'
-        site_dir="${SHELLSPEC_TMPBASE}/joomla-postgresql"
-
-        cp -r ./fixture/joomla-site "${site_dir}"
-        sed -i "s/\\\$dbtype = 'mysqli'/\\\$dbtype = 'pgsql'/" "${site_dir}/configuration.php"
-
-        cd "${site_dir}"
+        cd ./fixture/joomla-postgresql-site
 
         When call "${SHELLSPEC_PROJECT_ROOT}/plugin/joomla"
 

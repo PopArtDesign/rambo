@@ -41,4 +41,4 @@ shellspec -ex                          # run failing test(s) then all passings
 - Mocks: `Mock <cmd> … End` around the `When call`.
 - Data tables: `Data:expand` with `#|` prefixed key-value pairs, injected via `/dev/stdin`.
 - Helper functions defined at top of spec files (e.g., `backup_file_name`, `backup_content`).
-- Fixtures in `fixture/`: `simple-site`, `wordpress-site`, `joomla-site`, `custom-site`, `empty.zip`.
+- Fixtures in `fixture/`: `simple-site`, `wordpress-site`, `joomla-site`, `joomla-postgresql-site`, `custom-site`, `empty.zip`.
