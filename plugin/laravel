@@ -2,6 +2,10 @@
 
 [ -f 'artisan' ] || exit 1
 
+cat <<CONFIG
+exclude: /storage/framework/cache/* /bootstrap/cache/*
+CONFIG
+
 env_value() {
     local key="${1}"
     local line=''
