@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ -f 'wp-config.php' ] || exit 1
+[[ -f 'wp-config.php' ]] || exit 1
 
 cat <<CONFIG
 exclude: /wp-content/cache/*

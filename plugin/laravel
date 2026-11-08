@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[ -f 'artisan' ] || exit 1
+[[ -f 'artisan' ]] || exit 1
 
 cat <<CONFIG
 exclude: /storage/framework/cache/* /bootstrap/cache/*
