@@ -8,7 +8,7 @@ include: */index.html
 CONFIG
 
 sed -nE \
-    -e "s/^.*\\\$dbtype[=[:space:]]+.*'(mysqli|mysql|pdomysql|mariadb)'.*$/database_type: mysql/p" \
+    -e "s/^.*\\\$dbtype[=[:space:]]+.*'(mysqli|mysql|pdomysql)'.*$/database_type: mysql/p" \
     -e "s/^.*\\\$dbtype[=[:space:]]+.*'(pgsql|postgresql)'.*$/database_type: postgresql/p" \
     -e "s/^.*\\\$db[=[:space:]]+.*'(.*)'.*$/database_name: \1/p" \
     -e "s/^.*\\\$user[=[:space:]]+.*'(.*)'.*$/database_user: \1/p" \
