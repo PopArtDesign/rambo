@@ -1,11 +1,12 @@
 name: CI
 on:
-    - push
-    - pull_request
+  - push
+  - pull_request
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@master
-            - uses: jdx/mise-action@v5
-            - run: shellspec
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: jdx/mise-action@v5
+      - run: mise run lint
+      - run: shellspec
