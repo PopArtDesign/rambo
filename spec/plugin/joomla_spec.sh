@@ -26,9 +26,25 @@ Describe 'Joomla plugin'
         The status should be success
         The output should include 'exclude: /cache/* /tmp/* /administrator/cache/*'
         The output should include 'include: */index.html'
+        The output should include 'database_type: mysql'
         The output should include 'database_name: joomla-database'
         The output should include 'database_user: joomla-user'
         The output should include 'database_password: joomla-password'
+    End
+
+    It 'detects PostgreSQL database type'
+        site_dir="${SHELLSPEC_TMPBASE}/joomla-postgresql"
+
+        cp -r ./fixture/joomla-site "${site_dir}"
+        sed -i "s/\\\$dbtype = 'mysqli'/\\\$dbtype = 'pgsql'/" "${site_dir}/configuration.php"
+
+        cd "${site_dir}"
+
+        When call "${SHELLSPEC_PROJECT_ROOT}/plugin/joomla"
+
+        The status should be success
+        The output should include 'database_type: postgresql'
+        The output should include 'database_name: joomla-database'
     End
 
     It 'excludes "cache" and "tmp" folders'
