@@ -1,3 +1,14 @@
+# Wrapper around `realpath` that resolves paths relative to a chosen working
+# directory and leaves pipes untouched.
+#
+# Needed because config paths may be relative to the config file rather than
+# the caller's CWD. Passing `--working-dir <dir>` (or `-w`) changes the base
+# directory before resolving, without mutating the caller's CWD.
+#
+# Also handles process substitution paths such as /dev/fd/63: `realpath` would
+# rewrite them to unstable /proc paths, so they are returned unchanged.
+# Remaining options (`-q`, `-m`, ...) are forwarded to the system `realpath`,
+# which keeps rambo working with paths whose components do not exist yet.
 app::util::realpath() {
     local -a opts=()
     local working_dir="${PWD}"
