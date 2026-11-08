@@ -4,3 +4,4 @@ shellspec = "0.28.1"
 
 [tasks]
 lint = "shellcheck --severity=error bin/* command/* plugin/* common.bash lib/*.bash"
+test = "shellspec"

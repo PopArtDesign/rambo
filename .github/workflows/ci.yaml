@@ -9,4 +9,4 @@ jobs:
       - uses: actions/checkout@master
       - uses: jdx/mise-action@v5
       - run: mise run lint
-      - run: shellspec
+      - run: mise run test
