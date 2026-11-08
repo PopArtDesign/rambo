@@ -21,6 +21,29 @@ sudo git clone --depth=1 https://github.com/PopArtDesign/rambo /opt/rambo && sud
 
 See [Uninstall](#uninstall) to remove Rambo.
 
+### Bash completion
+
+The completion script lives in [`completion/rambo.bash`](./completion/rambo.bash). Link or copy it into a bash-completion directory.
+
+Local (`~/.local`):
+
+```sh
+mkdir -p ~/.local/share/bash-completion/completions
+ln -sf ~/.local/lib/rambo/completion/rambo.bash ~/.local/share/bash-completion/completions/rambo
+```
+
+Global (`/opt`):
+
+```sh
+sudo ln -sf /opt/rambo/completion/rambo.bash /usr/share/bash-completion/completions/rambo
+```
+
+Without bash-completion, source the script from `~/.bashrc`:
+
+```sh
+source ~/.local/lib/rambo/completion/rambo.bash
+```
+
 ## Usage
 
 Rambo backs up all site data into a single `.zip` archive. Its [plugins](./plugin) detect site configuration — database, cache folders and more — and include or exclude files from the final backup.
