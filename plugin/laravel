@@ -6,60 +6,18 @@ cat <<CONFIG
 exclude: /storage/framework/cache/* /bootstrap/cache/*
 CONFIG
 
-env_value() {
-    local key="${1}"
-    local line=''
-    local value=''
+[[ -r '.env' ]] || exit 0
 
-    line="$(grep -E "^[[:space:]]*(export[[:space:]]+)?${key}[[:space:]]*=" '.env' 2>/dev/null | tail -n 1 || true)"
-
-    [[ -z "${line}" ]] && return 0
-
-    value="${line#*=}"
-    value="${value#"${value%%[![:space:]]*}"}"
-    value="${value%"${value##*[![:space:]]}"}"
-
-    case "${value}" in
-    \"*\")
-        value="${value:1:${#value}-2}"
-        ;;
-    \'*\')
-        value="${value:1:${#value}-2}"
-        ;;
-    *)
-        value="${value%%[[:space:]]#*}"
-        value="${value%"${value##*[![:space:]]}"}"
-        ;;
-    esac
-
-    printf '%s' "${value}"
-}
-
-print_config() {
-    local key="${1}"
-    local value
-
-    value="$(env_value "${key}")"
-
-    [[ -z "${value}" ]] && return 0
-
-    printf 'database_%s: %s\n' "${2:-${key,,}}" "${value}"
-}
-
-case "$(env_value 'DB_CONNECTION')" in
-mysql)
-    printf 'database_type: mysql\n'
-    ;;
-mariadb)
-    printf 'database_type: mariadb\n'
-    ;;
-pgsql | postgres | postgresql)
-    printf 'database_type: postgresql\n'
-    ;;
-esac
-
-print_config 'DB_HOST' 'host'
-print_config 'DB_PORT' 'port'
-print_config 'DB_DATABASE' 'name'
-print_config 'DB_USERNAME' 'user'
-print_config 'DB_PASSWORD' 'password'
+while read -r env_key config_key; do
+    sed -nE \
+        -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([\"'])(.+)\\2[[:space:]]*(#.*)?$/database_${config_key}: \\3/p" \
+        -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([^'\"#]*[^'\"#[:space:]])[[:space:]]*(#.*)?$/database_${config_key}: \\2/p" \
+        '.env'
+done <<'KEYS' | sed -E 's/^database_type: (pgsql|postgres)$/database_type: postgresql/'
+DB_CONNECTION type
+DB_HOST host
+DB_PORT port
+DB_DATABASE name
+DB_USERNAME user
+DB_PASSWORD password
+KEYS
