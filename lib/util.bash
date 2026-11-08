@@ -19,7 +19,7 @@ app::util::realpath() {
         return
     fi
 
-    (cd "${working_dir}" && command realpath "${opts[@]}" "$@")
+    (cd "${working_dir}" && command realpath ${opts[@]+"${opts[@]}"} "$@")
 }
 
 app::util::confirm() {

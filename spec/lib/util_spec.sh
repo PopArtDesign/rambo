@@ -17,6 +17,17 @@ Describe 'app::util::realpath'
         The status should be success
         The output should equal "${dir}"
     End
+
+    It 'works without options'
+        dir="${SHELLSPEC_TMPBASE}/realpath-test"
+
+        mkdir -p "${dir}"
+
+        When call app::util::realpath "${dir}"
+
+        The status should be success
+        The output should equal "${dir}"
+    End
 End
 
 
