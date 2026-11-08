@@ -200,7 +200,7 @@ rambo backup /etc/rambo/mysite.conf mysite.zip
 
 ## Plugins
 
-Plugins auto-detect site type (WordPress, Joomla, etc.) from executable scripts in predefined search dirs:
+Plugins auto-detect site type (WordPress, Joomla, Laravel, etc.) from executable scripts in predefined search dirs:
 
 - `~/.rambo/plugin`
 - `~/.local/share/rambo/plugin`
