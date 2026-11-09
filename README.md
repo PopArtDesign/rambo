@@ -3,17 +3,23 @@
 [![CI](https://github.com/PopArtDesign/rambo/actions/workflows/ci.yaml/badge.svg)](https://github.com/PopArtDesign/rambo/actions/workflows/ci.yaml)
 [![GitHub license](https://img.shields.io/github/license/PopArtDesign/rambo)](https://github.com/PopArtDesign/rambo/blob/main/LICENSE)
 
-Rambo is a simple backup tool for web sites ([Joomla](https://www.joomla.org/), [WordPress](https://wordpress.org/) and others) written in [Bash](https://www.gnu.org/software/bash/) (requires bash 4+).
+Rambo is a simple backup tool for web sites ([Joomla](https://www.joomla.org/), [WordPress](https://wordpress.org/) and others) written in [Bash](https://www.gnu.org/software/bash/).
+
+## System Requirements
+
+**Required:** `bash` 4+, `coreutils` (GNU), `zip`, `unzip`.
+
+**Optional:** `mysql`/`mysqldump`, `mariadb`/`mariadb-dump`, `psql`/`pg_dump` — only needed for database dump/restore operations. When no DB credentials are configured, Rambo auto-detects the database type from installed dump tools. If none found, database commands fail gracefully.
 
 ## Install
 
-Local (`~/.local`):
+### Local (`~/.local`):
 
 ```sh
 git clone --depth=1 https://github.com/PopArtDesign/rambo ~/.local/lib/rambo && ln -s ~/.local/lib/rambo/bin/rambo ~/.local/bin/rambo
 ```
 
-Global (`/opt`):
+### Global (`/opt`):
 
 ```sh
 sudo git clone --depth=1 https://github.com/PopArtDesign/rambo /opt/rambo && sudo ln -s /opt/rambo/bin/rambo /usr/local/bin/rambo
