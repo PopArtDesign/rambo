@@ -91,8 +91,8 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 |---|---|---|---|
 | `root` | Absolute or relative path to site root directory | — | Main config only |
 | `plugin` | Plugin name (auto-detected if omitted); must match an executable script name in plugin search paths | auto-detect | Local, main |
-| `exclude` | Space-separated glob patterns to exclude from backup | — | Local, main (repeatable) |
-| `include` | Space-separated glob patterns to include in backup | — | Local, main (repeatable) |
+| `exclude` | Space-separated [zip patterns](#excluding-and-including-files) to exclude from backup | — | Local, main (repeatable) |
+| `include` | Space-separated [zip patterns](#excluding-and-including-files) to force into backup | — | Local, main (repeatable) |
 | `database_url` | Database connection URL, e.g. `mysql://user:pass@localhost:3306/mydb`; parsed into other `database_*` options at the directive site | — | Local, main |
 | `database_name` | Database name for dump/restore operations | — | Local, main |
 | `database_type` | Database type: `mysql`, `mariadb` or `postgresql` | auto-detected | Local, main |
@@ -106,6 +106,46 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 Repeatable keys (`exclude`, `include`) may appear multiple times — values accumulate.
 
 `root` key is valid **only** in main config files (passed as argument or via `/etc/rambo/…`). It is rejected in local `.rambo.conf` files.
+
+### Excluding and including files
+
+`exclude` and `include` are whitespace-separated patterns passed to `zip`'s `-x` and `-i` options. They match paths **relative to the site root**, and Rambo disables shell globbing, so write them as-is — no quotes or escaping needed.
+
+Pattern syntax:
+
+- `*` matches any characters, **including `/`**; `?` matches one character; `[abc]` / `[!abc]` match character sets.
+- A leading `/` is optional: `/cache/*` and `cache/*` mean the same thing.
+- `*` already crosses directories, so `*.log` matches `error.log`, `logs/error.log` and `var/logs/error.log`. No `**` needed.
+- To exclude a directory's contents, add `/*`: use `.git/*` or `cache/*`. A bare `.git` or a trailing slash (`.git/`) does not skip the files inside.
+- To match a directory at any depth, list both root and nested forms: `cache/* */cache/*`. (`*/cache/*` alone misses a top-level `cache/`.)
+
+How `exclude` and `include` combine:
+
+- Values from main config, local config and plugins **accumulate**; they do not replace each other.
+- With `include` but no `exclude`, only matching files are archived.
+- With both, Rambo first adds files matching `include`, then adds everything except `exclude`. So an included file survives even if a broader exclude pattern would drop it — but the rest of the site is still backed up.
+- To back up **only** selected paths even when plugins add exclusions, combine a catch-all exclude with includes: `exclude: *` and `include: index.php assets/* uploads/*`.
+- To keep placeholder files inside excluded caches (common for Joomla), exclude the contents and include the placeholders: `exclude: cache/*` and `include: */index.html`.
+
+Examples:
+
+```sh
+# Root .git and node_modules, plus all logs and archives at any depth
+exclude: .git/* node_modules/* *.log *.zip
+
+# Cache directories at any depth, but keep .gitkeep files
+exclude: cache/* */cache/* .git/*
+include: cache/.gitkeep */.gitkeep
+
+# Back up only the application, uploads and hidden server config
+exclude: *
+include: index.php assets/* uploads/* .htaccess
+
+# WordPress plugin excludes wp-content/cache/*; force-keep one file from it
+include: wp-content/cache/keep.txt
+```
+
+Patterns cannot contain spaces (space is the separator), so paths with spaces cannot currently be targeted individually.
 
 ### Database types
 
@@ -158,7 +198,7 @@ cat > xA4di35ie.rambo.conf <<CONFIG
 # Try "rambo plugins" to see all available plugins
 plugin: default
 
-exclude: .git/* .zip
+exclude: .git/* *.zip
 
 # Rambo can back up only one database
 database_name: dbname
