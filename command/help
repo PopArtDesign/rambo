@@ -23,7 +23,7 @@ main() {
     local app_command="${0##*/}"
 
     cat <<HELP
-${app_name}: simple backup tool for web sites (Joomla, Wordpress & etc.).
+${app_name}: simple backup tool for web sites (Joomla, WordPress, etc.).
 
 Usage:
 
