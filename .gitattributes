@@ -1,0 +1,16 @@
+# Exclude dev/test files from `git archive` (source releases/tags)
+/spec export-ignore
+/fixture export-ignore
+/.github* export-ignore
+/.shellspec* export-ignore
+/AGENTS.md export-ignore
+/mise.toml export-ignore
+
+# Text files → normalize line endings on checkout
+*.md text
+*.bash text
+bin/* text
+command/* text
+completion/* text
+lib/* text
+plugin/* text
