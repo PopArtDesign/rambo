@@ -162,7 +162,12 @@ app::database::apply_url() {
         return 1
     }
 
-    case "${parsed[type]}" in
+    local type="${parsed[type]}"
+
+    # Laravel and other tools use "pgsql" as the PostgreSQL driver name.
+    [[ "${type}" == 'pgsql' ]] && type='postgresql'
+
+    case "${type}" in
     mysql | mariadb | postgresql) ;;
     *)
         app::error::error "Invalid database_url protocol: ${parsed[type]}"
@@ -171,7 +176,7 @@ app::database::apply_url() {
         ;;
     esac
 
-    site_config[database_type]="${parsed[type]}"
+    site_config[database_type]="${type}"
     site_config[database_name]="${parsed[name]}"
     site_config[database_user]="${parsed[user]}"
     site_config[database_password]="${parsed[password]}"

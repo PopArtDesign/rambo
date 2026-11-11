@@ -229,6 +229,18 @@ Describe 'app::database::apply_url'
         The value "${site_config[database_port]}" should equal '5432'
     End
 
+    It 'normalizes pgsql protocol to postgresql'
+        site_config[database_url]='pgsql://user:pass@db.example.com:5432/mydb'
+
+        When call app::database::apply_url
+
+        The status should be success
+        The value "${site_config[database_type]}" should equal 'postgresql'
+        The value "${site_config[database_name]}" should equal 'mydb'
+        The value "${site_config[database_host]}" should equal 'db.example.com'
+        The value "${site_config[database_port]}" should equal '5432'
+    End
+
     It 'fails when database URL is invalid'
         When run app::database::apply_url ''
 

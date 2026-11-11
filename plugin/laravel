@@ -8,12 +8,13 @@ CONFIG
 
 [[ -r '.env' ]] || exit 0
 
-while read -r env_key config_key; do
-    sed -nE \
-        -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([\"'])(.+)\\2[[:space:]]*(#.*)?$/database_${config_key}: \\3/p" \
-        -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([^'\"#]*[^'\"#[:space:]])[[:space:]]*(#.*)?$/database_${config_key}: \\2/p" \
-        '.env'
-done <<'KEYS' | sed -E 's/^database_type: (pgsql|postgres)$/database_type: postgresql/'
+{
+    while read -r env_key config_key; do
+        sed -nE \
+            -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([\"'])(.+)\\2[[:space:]]*(#.*)?$/database_${config_key}: \\3/p" \
+            -e "s/^[[:space:]]*(export[[:space:]]+)?${env_key}[[:space:]]*=[[:space:]]*([^'\"#]*[^'\"#[:space:]])[[:space:]]*(#.*)?$/database_${config_key}: \\2/p" \
+            '.env'
+    done <<'KEYS'
 DB_CONNECTION type
 DB_HOST host
 DB_PORT port
@@ -21,3 +22,11 @@ DB_DATABASE name
 DB_USERNAME user
 DB_PASSWORD password
 KEYS
+
+    # Laravel merges DB_URL over the individual DB_* values, so it is emitted
+    # last to let its connection and credential information win.
+    sed -nE \
+        -e "s/^[[:space:]]*(export[[:space:]]+)?DB_URL[[:space:]]*=[[:space:]]*([\"'])(.+)\\2[[:space:]]*(#.*)?$/database_url: \\3/p" \
+        -e "s/^[[:space:]]*(export[[:space:]]+)?DB_URL[[:space:]]*=[[:space:]]*([^'\"#]*[^'\"#[:space:]])[[:space:]]*(#.*)?$/database_url: \\2/p" \
+        '.env'
+} | sed -E 's/^database_type: (pgsql|postgres)$/database_type: postgresql/'
