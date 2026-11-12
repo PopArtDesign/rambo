@@ -278,6 +278,17 @@ CONFIG
         The error should include '/usr/local/etc/rambo/cool-site.conf: invalid key: foo'
     End
 
+    It 'parses backup root option'
+        Data:raw
+            #|backup_root: current
+        End
+
+        When call app::site::load_config 'site.conf' 'main'
+
+        The status should be success
+        The value "${site_config[backup_root]:-}" should equal 'current'
+    End
+
     It "doesn't allow \"root\" key in plugin config"
         Data:raw
             #|root: /tmp
@@ -404,6 +415,55 @@ Describe 'app::site::finalize_config'
 
         The status should be success
         The value "${site_config[database_type]:-}" should equal ''
+    End
+
+    It 'defaults backup root to site root'
+        site_config[root]='/tmp'
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[backup_root]}" should equal '/tmp'
+    End
+
+    It 'resolves backup root relative to site root'
+        site_config[root]="${SHELLSPEC_PROJECT_ROOT}/fixture/laravel-deployer-site"
+        site_config[backup_root]='current'
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[backup_root]}" should equal "$(realpath ./fixture/laravel-deployer-site/releases/v1)"
+    End
+
+    It 'keeps absolute backup root'
+        site_config[root]='/tmp'
+        site_config[backup_root]="${SHELLSPEC_PROJECT_ROOT}/fixture/laravel-site"
+
+        When call app::site::finalize_config
+
+        The status should be success
+        The value "${site_config[backup_root]}" should equal "$(realpath ./fixture/laravel-site)"
+    End
+
+    It 'fails when backup root does not exist'
+        site_config[root]='/tmp'
+        site_config[backup_root]='/i/hope/this/path/not/exists'
+
+        When run app::site::finalize_config
+
+        The status should be failure
+        The error should include 'Backup root not exists or not a directory: /i/hope/this/path/not/exists'
+    End
+
+    It 'fails when backup root is not a directory'
+        site_config[root]='/tmp'
+        site_config[backup_root]="${SHELLSPEC_PROJECT_ROOT}/fixture/site.conf"
+
+        When run app::site::finalize_config
+
+        The status should be failure
+        The error should include 'Backup root not exists or not a directory:'
     End
 
     It 'fails when database type cannot be detected'

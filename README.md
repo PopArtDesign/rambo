@@ -90,6 +90,7 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | Key | Description | Default | Allowed in |
 |---|---|---|---|
 | `root` | Absolute or relative path to site root directory | — | Main config only |
+| `backup_root` | Directory whose contents are archived; relative paths resolve against `root` | `root` | Local, main, plugin |
 | `plugin` | Plugin name (auto-detected if omitted); must match an executable script name in plugin search paths | auto-detect | Local, main |
 | `exclude` | Space-separated [zip patterns](#excluding-and-including-files) to exclude from backup | — | Local, main (repeatable) |
 | `include` | Space-separated [zip patterns](#excluding-and-including-files) to force into backup | — | Local, main (repeatable) |
@@ -109,7 +110,7 @@ Repeatable keys (`exclude`, `include`) may appear multiple times — values accu
 
 ### Excluding and including files
 
-`exclude` and `include` are whitespace-separated patterns passed to `zip`'s `-x` and `-i` options. They match paths **relative to the site root**, and Rambo disables shell globbing, so write them as-is — no quotes or escaping needed.
+`exclude` and `include` are whitespace-separated patterns passed to `zip`'s `-x` and `-i` options. They match paths **relative to the backup root** (`root`, unless `backup_root` overrides it), and Rambo disables shell globbing, so write them as-is — no quotes or escaping needed.
 
 Pattern syntax:
 
@@ -258,6 +259,20 @@ sed -nE \
 ```
 
 Plugin output is parsed by the same config loader — same keys, same rules. Keys marked "main config only" (like `root`) are rejected here.
+
+Plugins may emit `backup_root` to archive a directory other than the site root. The built-in Laravel plugin does this for Deployer-style layouts, where `current` is a symlink to the active `releases/<name>` directory:
+
+```bash
+if [[ -L 'current' && -f 'current/artisan' ]]; then
+    backup_root="$(readlink -f current)"
+    cd "${backup_root}"
+fi
+
+# ...
+printf 'backup_root: %s\n' "${backup_root}"
+```
+
+The archive then contains the release contents at its top level, and `exclude` patterns are applied relative to that directory.
 
 ### The `default` plugin
 

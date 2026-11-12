@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 
+# Deployer-style deployments keep application files in releases/<name> and
+# expose the active release through the `current` symlink.
+backup_root=''
+
+if [[ -L 'current' && -f 'current/artisan' ]]; then
+    backup_root="$(readlink -f current)"
+    cd "${backup_root}"
+fi
+
 [[ -f 'artisan' ]] || exit 1
 
 cat <<CONFIG
 exclude: /storage/framework/cache/* /bootstrap/cache/*
 CONFIG
+
+if [[ -n "${backup_root}" ]]; then
+    printf 'backup_root: %s\n' "${backup_root}"
+fi
 
 [[ -r '.env' ]] || exit 0
 

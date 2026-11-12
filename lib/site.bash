@@ -139,6 +139,9 @@ app::site::load_config() {
 
             site_config[local_config_file_suffix]="${value}"
             ;;
+        backup_root)
+            site_config[backup_root]="${value}"
+            ;;
         plugin)
             [[ "${context}" == 'plugin' ]] && app::error::error \
                 "${src}: key \"${key}\" not allowed for plugins"
@@ -195,6 +198,8 @@ app::site::load_config() {
 
 # Resolves values that depend on all configuration sources being loaded.
 app::site::finalize_config() {
+    app::site::finalize_backup_root
+
     if [[ -z "${site_config[database_type]:-}" && -n "${site_config[database_name]:-}" ]]; then
         local detected=''
 
@@ -205,6 +210,27 @@ app::site::finalize_config() {
 
             return 1
         fi
+    fi
+}
+
+app::site::finalize_backup_root() {
+    local site_root="${site_config[root]:-}"
+
+    if [[ -z "${site_config[backup_root]:-}" ]]; then
+        site_config[backup_root]="${site_root}"
+
+        return
+    fi
+
+    site_config[backup_root]="$(app::util::realpath \
+        --working-dir "${site_root:-${PWD}}" -qm "${site_config[backup_root]}")"
+
+    if [[ ! -d "${site_config[backup_root]}" ]]; then
+        app::error::error "Backup root not exists or not a directory: ${site_config[backup_root]}"
+    fi
+
+    if [[ ! -r "${site_config[backup_root]}" ]]; then
+        app::error::error "Backup root not readable: ${site_config[backup_root]}"
     fi
 }
 

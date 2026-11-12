@@ -56,6 +56,11 @@ main() {
     app::site::load_site_config "${site_path}"
 
     printf 'Site: %s\n' "${site_config[root]}"
+
+    if [[ "${site_config[backup_root]}" != "${site_config[root]}" ]]; then
+        printf 'Backup root: %s\n' "${site_config[backup_root]}"
+    fi
+
     printf 'Plugin: %s\n' "${site_config[plugin]}"
 
     echo 'Processing... This may take a while.'
@@ -74,7 +79,7 @@ app_create_backup_file() {
 }
 
 app_backup_site_files() {
-    local site_path="${site_config[root]}"
+    local site_path="${site_config[backup_root]}"
     local backup_file="${site_config[backup_file]}"
 
     local include="${site_config[include]:-}"
