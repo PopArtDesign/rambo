@@ -31,6 +31,22 @@ Describe 'rambo detect'
         The output should include "Main config:  ${main_config_file}"
     End
 
+    It 'shows backup root when it differs from site root'
+        backup_root="$(realpath ./fixture/laravel-deployer-site/releases/v1)"
+
+        When call rambo detect ./fixture/laravel-deployer-site
+
+        The status should be success
+        The output should include "Backup root: ${backup_root}"
+    End
+
+    It 'omits backup root when it equals site root'
+        When call rambo detect ./fixture/laravel-site
+
+        The status should be success
+        The output should not include 'Backup root:'
+    End
+
     It 'masks database password'
         When call rambo detect ./fixture/custom-site
 
