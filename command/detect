@@ -48,7 +48,7 @@ main() {
 
     local local_config_file="${site_config[local_config_file]:-~}"
 
-    echo "Main config: ${site_config[main_config_file]:-~}"
+    echo "Main config:  ${site_config[main_config_file]:-~}"
     echo "Local config: ${local_config_file##*/}"
     echo
     echo "Root:        ${site_config[root]:-~}"

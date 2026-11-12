@@ -28,7 +28,7 @@ Describe 'rambo detect'
         When call rambo detect ./fixture/joomla-site.conf
 
         The status should be success
-        The output should include "Main config: ${main_config_file}"
+        The output should include "Main config:  ${main_config_file}"
     End
 
     It 'shows backup root when it differs from site root'
