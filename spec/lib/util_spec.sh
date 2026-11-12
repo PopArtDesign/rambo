@@ -31,6 +31,24 @@ Describe 'app::util::realpath'
 End
 
 
+Describe 'app::util::print_fields'
+    It 'aligns values to the longest label'
+        When call app::util::print_fields 'Root:' '/srv/app' 'Backup root:' '/srv/app/current'
+
+        The status should be success
+        The line 1 of output should equal 'Root:        /srv/app'
+        The line 2 of output should equal 'Backup root: /srv/app/current'
+    End
+
+    It 'uses a single space when labels have equal length'
+        When call app::util::print_fields 'Exclude:' '*.log' 'Include:' 'index.html'
+
+        The status should be success
+        The line 1 of output should equal 'Exclude: *.log'
+        The line 2 of output should equal 'Include: index.html'
+    End
+End
+
 Describe 'app::util::parse_url'
     It 'parses URL into provided array'
         declare -A parsed=()

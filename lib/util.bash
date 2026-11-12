@@ -33,6 +33,24 @@ app::util::realpath() {
     (cd "${working_dir}" && command realpath ${opts[@]+"${opts[@]}"} "$@")
 }
 
+# Prints label/value pairs aligned by the longest label.
+# Arguments alternate: label value label value ...
+app::util::print_fields() {
+    local -a fields=("$@")
+    local width=0
+    local index
+
+    for ((index = 0; index < ${#fields[@]}; index += 2)); do
+        if [[ "${#fields[index]}" -gt "${width}" ]]; then
+            width="${#fields[index]}"
+        fi
+    done
+
+    for ((index = 0; index < ${#fields[@]}; index += 2)); do
+        printf "%-${width}s %s\n" "${fields[index]}" "${fields[index + 1]}"
+    done
+}
+
 app::util::confirm() {
     local reply='n'
     local message="${1:-Sure?}"

@@ -41,10 +41,13 @@ Describe 'rambo detect'
     End
 
     It 'omits backup root when it equals site root'
+        root="$(realpath ./fixture/laravel-site)"
+
         When call rambo detect ./fixture/laravel-site
 
         The status should be success
         The output should not include 'Backup root:'
+        The output should include "Root:    ${root}"
     End
 
     It 'masks database password'

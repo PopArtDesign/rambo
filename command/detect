@@ -4,6 +4,7 @@ source "${app_common}"
 
 app::use 'error'
 app::use 'site'
+app::use 'util'
 
 main() {
     local opt_help=false
@@ -48,31 +49,40 @@ main() {
 
     local local_config_file="${site_config[local_config_file]:-~}"
 
-    echo "Main config:  ${site_config[main_config_file]:-~}"
-    echo "Local config: ${local_config_file##*/}"
+    app::util::print_fields \
+        'Main config:' "${site_config[main_config_file]:-~}" \
+        'Local config:' "${local_config_file##*/}"
+
     echo
-    echo "Root:        ${site_config[root]:-~}"
+
+    local -a site_fields=('Root:' "${site_config[root]:-~}")
 
     if [[ "${site_config[backup_root]:-}" != "${site_config[root]:-}" ]]; then
-        echo "Backup root: ${site_config[backup_root]}"
+        site_fields+=('Backup root:' "${site_config[backup_root]}")
     fi
 
-    echo "Exclude:     ${site_config[exclude]:-~}"
-    echo "Include:     ${site_config[include]:-~}"
+    site_fields+=(
+        'Exclude:' "${site_config[exclude]:-~}"
+        'Include:' "${site_config[include]:-~}"
+    )
+
+    app::util::print_fields "${site_fields[@]}"
 
     app_header 'Database'
 
-    echo "Name:     ${site_config[database_name]:-~}"
-    echo "Type:     ${site_config[database_type]:-~}"
-    echo "Host:     ${site_config[database_host]:-~}"
-    echo "Port:     ${site_config[database_port]:-~}"
-    echo "User:     ${site_config[database_user]:-~}"
+    local database_password='~'
 
     if [[ -n "${site_config[database_password]:-}" ]]; then
-        echo 'Password: ********'
-    else
-        echo 'Password: ~'
+        database_password='********'
     fi
+
+    app::util::print_fields \
+        'Name:' "${site_config[database_name]:-~}" \
+        'Type:' "${site_config[database_type]:-~}" \
+        'Host:' "${site_config[database_host]:-~}" \
+        'Port:' "${site_config[database_port]:-~}" \
+        'User:' "${site_config[database_user]:-~}" \
+        'Password:' "${database_password}"
 }
 
 app_header() {
