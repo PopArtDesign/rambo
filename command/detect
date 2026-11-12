@@ -48,17 +48,17 @@ main() {
 
     local local_config_file="${site_config[local_config_file]:-~}"
 
-    echo "Main config:  ${site_config[main_config_file]:-~}"
+    echo "Main config: ${site_config[main_config_file]:-~}"
     echo "Local config: ${local_config_file##*/}"
     echo
-    echo "Root:    ${site_config[root]:-~}"
+    echo "Root:        ${site_config[root]:-~}"
 
     if [[ "${site_config[backup_root]:-}" != "${site_config[root]:-}" ]]; then
         echo "Backup root: ${site_config[backup_root]}"
     fi
 
-    echo "Exclude: ${site_config[exclude]:-~}"
-    echo "Include: ${site_config[include]:-~}"
+    echo "Exclude:     ${site_config[exclude]:-~}"
+    echo "Include:     ${site_config[include]:-~}"
 
     app_header 'Database'
 
