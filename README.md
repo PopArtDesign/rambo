@@ -208,6 +208,8 @@ database_password: dbpass
 CONFIG
 ```
 
+Rambo searches the site root first, then `backup_root` — including when a plugin (such as Laravel's Deployer layout detection) sets it. If config files exist in both locations, Rambo fails with an error. The `plugin` key cannot be set in a config file found in `backup_root`, because the plugin has already been loaded by then.
+
 ### Main config file
 
 For sites without local config access (or for global overrides), create a standalone config and pass it as the site argument:

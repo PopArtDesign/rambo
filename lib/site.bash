@@ -10,6 +10,9 @@ app::site::load_site_config() {
 
     app::site::load_plugin_config
 
+    # Plugin config may set backup_root, so its local config is found only now.
+    app::site::load_backup_root_local_config
+
     app::site::finalize_config
 }
 
@@ -120,22 +123,60 @@ app::site::load_local_config() {
         fi
     fi
 
+    app::site::load_local_config_from "${config_dirs[@]}"
+}
+
+# Plugins may set backup_root, which is unknown when the local config is first
+# loaded. Look there again once the plugin config is available.
+app::site::load_backup_root_local_config() {
+    [[ -z "${site_config[local_config_file_suffix]:-}" ]] && return
+
+    local backup_root="${site_config[backup_root]:-}"
+
+    [[ -z "${backup_root}" ]] && return
+
+    backup_root="$(app::util::realpath \
+        --working-dir "${site_config[root]}" -qm "${backup_root}")"
+
+    [[ "${backup_root}" == "${site_config[root]}" ]] && return
+
+    if [[ -n "${site_config[local_config_file]:-}" ]]; then
+        [[ "$(dirname "${site_config[local_config_file]}")" == "${backup_root}" ]] && return
+    fi
+
+    local plugin_before="${site_config[plugin]:-}"
+
+    app::site::load_local_config_from "${backup_root}"
+
+    if [[ "${site_config[plugin]:-}" != "${plugin_before}" ]]; then
+        app::error::error "${site_config[local_config_file]}: key \"plugin\" not allowed in backup_root local config file"
+    fi
+}
+
+app::site::load_local_config_from() {
     local -a config_files=()
     local dir=''
 
-    for dir in "${config_dirs[@]}"; do
+    for dir in "$@"; do
         config_files+=("${dir}"/*"${site_config[local_config_file_suffix]}")
     done
 
     [[ "${#config_files[@]}" -eq 0 ]] && return
 
+    if [[ -n "${site_config[local_config_file]:-}" ]]; then
+        app::error::error "Multiple site config files found: ${site_config[local_config_file]} ${config_files[*]}"
+    fi
+
     if [[ "${#config_files[@]}" -gt 1 ]]; then
         app::error::error "Multiple site config files found: ${config_files[*]}"
     fi
 
-    site_config[local_config_file]="$(app::util::realpath "${config_files[0]}")"
+    local config_file=''
+    config_file="$(app::util::realpath "${config_files[0]}")"
 
-    app::site::load_config "${site_config[local_config_file]}" 'local' <"${site_config[local_config_file]}"
+    site_config[local_config_file]="${config_file}"
+
+    app::site::load_config "${config_file}" 'local' <"${config_file}"
 }
 
 app::site::load_config() {

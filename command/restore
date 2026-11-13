@@ -58,6 +58,8 @@ main() {
 
     app::site::load_plugin_config
 
+    app::site::load_backup_root_local_config
+
     app::site::finalize_config
 
     printf 'Site: %s\n' "${site_config[root]}"

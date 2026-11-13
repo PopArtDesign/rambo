@@ -158,6 +158,80 @@ Describe 'app::site::load_local_config'
     End
 End
 
+Describe 'app::site::load_backup_root_local_config'
+    Set 'errexit:on'
+
+    beforeEach() {
+        declare -gA site_config=()
+
+        workdir="$(mktemp -d "${SHELLSPEC_TMPBASE}/backup-root-local-config.XXXXXX")"
+        site_config[root]="${workdir}/site"
+        site_config[backup_root]="${workdir}/backup"
+        site_config[local_config_file_suffix]='.rambo.conf'
+
+        mkdir -p "${site_config[root]}" "${site_config[backup_root]}"
+    }
+
+    BeforeEach 'beforeEach'
+
+    It 'loads local config from backup root'
+        printf 'exclude: .git\n' > "${site_config[backup_root]}/site.rambo.conf"
+
+        When call app::site::load_backup_root_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal '.git'
+        The value "${site_config[local_config_file]:-}" should equal "$(realpath "${site_config[backup_root]}/site.rambo.conf")"
+    End
+
+    It 'does not reload local config already loaded from backup root'
+        printf 'exclude: .git\n' > "${site_config[backup_root]}/site.rambo.conf"
+
+        config_file="$(realpath "${site_config[backup_root]}/site.rambo.conf")"
+        site_config[local_config_file]="${config_file}"
+
+        When call app::site::load_backup_root_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal ''
+    End
+
+    It 'fails when local config exists in both site and backup roots'
+        touch "${site_config[root]}/site.rambo.conf" \
+            "${site_config[backup_root]}/site.rambo.conf"
+
+        site_config[local_config_file]="$(realpath \
+            "${site_config[root]}/site.rambo.conf")"
+
+        When run app::site::load_backup_root_local_config
+
+        The status should be failure
+        The error should include 'Multiple site config files found:'
+    End
+
+    It 'rejects the "plugin" key when the plugin config is already loaded'
+        site_config[plugin]='default'
+
+        printf 'plugin: laravel\n' > "${site_config[backup_root]}/site.rambo.conf"
+
+        When run app::site::load_backup_root_local_config
+
+        The status should be failure
+        The error should include 'key "plugin" not allowed in backup_root local config file'
+    End
+
+    It 'skips backup root when it equals site root'
+        site_config[backup_root]="${site_config[root]}"
+
+        printf 'exclude: .git\n' > "${site_config[root]}/site.rambo.conf"
+
+        When call app::site::load_backup_root_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal ''
+    End
+End
+
 Describe 'app::site::load_config'
     Set 'errexit:on'
 
