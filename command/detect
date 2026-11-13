@@ -51,7 +51,7 @@ main() {
 
     app::util::print_fields \
         'Main config:' "${site_config[main_config_file]:-~}" \
-        'Local config:' "${local_config_file##*/}"
+        'Local config:' "${local_config_file}"
 
     echo
 

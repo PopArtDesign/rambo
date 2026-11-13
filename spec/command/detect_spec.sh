@@ -32,10 +32,12 @@ Describe 'rambo detect'
     End
 
     It 'shows local config loaded from backup root'
+        local_config_file="$(realpath ./fixture/laravel-deployer-site/releases/v1/.rambo.conf)"
+
         When call rambo detect ./fixture/laravel-deployer-site
 
         The status should be success
-        The output should include 'Local config: .rambo.conf'
+        The output should include "Local config: ${local_config_file}"
     End
 
     It 'shows backup root when it differs from site root'
