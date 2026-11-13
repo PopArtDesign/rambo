@@ -144,6 +144,8 @@ How `exclude` and `include` combine:
 - To back up **only** selected paths even when plugins add exclusions, combine a catch-all exclude with includes: `exclude: *` and `include: index.php assets/* uploads/*`.
 - To keep placeholder files inside excluded caches (common for Joomla), exclude the contents and include the placeholders: `exclude: cache/*` and `include: */index.html`.
 
+To test patterns without creating an archive, use `rambo preview /path/to/site`: it lists the files that would be included, while `rambo preview --excluded /path/to/site` lists the files that would be left out. Both apply all `include`, `exclude`, and plugin-generated patterns.
+
 Examples:
 
 ```sh
