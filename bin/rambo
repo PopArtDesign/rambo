@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 declare -rx app_name="${0##*/}"
-declare -rx app_version='0.4.0-dev'
+declare -rx app_version='0.4-dev'
 declare -rx app_path="$(realpath "${0}")"
 declare -rx app_dir="$(dirname "${app_path}")"
 

@@ -35,7 +35,8 @@ fi
 versions "${args[@]}"
 
 released="$(sed -n "s/^declare -rx app_version='\(.*\)'$/\1/p" bin/rambo)"
-dev_version="${released}-dev"
+# Match the existing short style: 0.4.0 -> 0.4-dev.
+dev_version="${released%.0}-dev"
 
 sed -i "s#^declare -rx app_version=.*#declare -rx app_version='${dev_version}'#" bin/rambo
 
