@@ -85,6 +85,79 @@ Describe 'app::site::load_main_config'
     End
 End
 
+Describe 'app::site::load_local_config'
+    Set 'errexit:on'
+
+    beforeEach() {
+        declare -gA site_config=()
+
+        workdir="$(mktemp -d "${SHELLSPEC_TMPBASE}/local-config.XXXXXX")"
+        site_config[root]="${workdir}/site"
+        site_config[local_config_file_suffix]='.rambo.conf'
+
+        mkdir -p "${site_config[root]}" "${workdir}/backup"
+    }
+
+    BeforeEach 'beforeEach'
+
+    It 'loads local config from site root'
+        printf 'exclude: .git\n' > "${site_config[root]}/site.rambo.conf"
+
+        When call app::site::load_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal '.git'
+        The value "${site_config[local_config_file]:-}" should equal "$(realpath "${site_config[root]}/site.rambo.conf")"
+    End
+
+    It 'loads local config from backup root'
+        site_config[backup_root]="${workdir}/backup"
+
+        printf 'exclude: .git\n' > "${workdir}/backup/site.rambo.conf"
+
+        When call app::site::load_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal '.git'
+        The value "${site_config[local_config_file]:-}" should equal "$(realpath "${workdir}/backup/site.rambo.conf")"
+    End
+
+    It 'resolves relative backup root against site root'
+        mkdir -p "${site_config[root]}/current"
+        site_config[backup_root]='current'
+
+        printf 'exclude: .git\n' > "${site_config[root]}/current/site.rambo.conf"
+
+        When call app::site::load_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal '.git'
+    End
+
+    It 'does not treat identical site and backup roots as duplicate locations'
+        site_config[backup_root]="${site_config[root]}"
+
+        printf 'exclude: .git\n' > "${site_config[root]}/site.rambo.conf"
+
+        When call app::site::load_local_config
+
+        The status should be success
+        The value "${site_config[exclude]:-}" should equal '.git'
+    End
+
+    It 'fails when config files found in both site and backup roots'
+        site_config[backup_root]="${workdir}/backup"
+
+        touch "${site_config[root]}/site.rambo.conf" \
+            "${workdir}/backup/backup.rambo.conf"
+
+        When run app::site::load_local_config
+
+        The status should be failure
+        The error should include 'Multiple site config files found:'
+    End
+End
+
 Describe 'app::site::load_config'
     Set 'errexit:on'
 

@@ -108,7 +108,24 @@ app::site::load_local_config() {
 
     app::site::check_site_root_exists_and_readable
 
-    local -a config_files=("${site_config[root]}"/*"${site_config[local_config_file_suffix]}")
+    local -a config_dirs=("${site_config[root]}")
+    local backup_root="${site_config[backup_root]:-}"
+
+    if [[ -n "${backup_root}" ]]; then
+        backup_root="$(app::util::realpath \
+            --working-dir "${site_config[root]}" -qm "${backup_root}")"
+
+        if [[ "${backup_root}" != "${site_config[root]}" ]]; then
+            config_dirs+=("${backup_root}")
+        fi
+    fi
+
+    local -a config_files=()
+    local dir=''
+
+    for dir in "${config_dirs[@]}"; do
+        config_files+=("${dir}"/*"${site_config[local_config_file_suffix]}")
+    done
 
     [[ "${#config_files[@]}" -eq 0 ]] && return
 

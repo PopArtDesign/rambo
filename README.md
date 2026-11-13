@@ -102,7 +102,7 @@ Rambo uses a flat `key: value` format (colon + space delimiter). Lines starting 
 | `database_user` | Database user for dump/cli auth | — | Local, main |
 | `database_password` | Database password for dump/cli auth | — | Local, main |
 | `database_dump_suffix` | Suffix appended to dump filenames (e.g. `.backup.sql`) | `.dump.sql` | Local, main |
-| `local_config_file_suffix` | Filename suffix searched for in site root (e.g. `.rambo.conf`) | `.rambo.conf` | Main config only |
+| `local_config_file_suffix` | Filename suffix searched for in site root and `backup_root` (e.g. `.rambo.conf`) | `.rambo.conf` | Main config only |
 
 Repeatable keys (`exclude`, `include`) may appear multiple times — values accumulate.
 
@@ -191,7 +191,7 @@ database_port: 3307
 
 ### Local config file (`.rambo.conf`)
 
-Place a config file matching the local suffix pattern inside your site's root folder:
+Place a config file matching the local suffix pattern inside your site's root folder (or inside `backup_root`, if set):
 
 ```sh
 cat > xA4di35ie.rambo.conf <<CONFIG
