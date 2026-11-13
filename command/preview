@@ -8,9 +8,11 @@ app::use 'site'
 
 main() {
     local opt_help=false
+    local opt_excluded=false
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
+        -e | --excluded) opt_excluded=true ;;
         -h | --help) opt_help=true ;;
         --) shift && break ;;
         -?*) app::error::unknown_option "${1}" ;;
@@ -40,9 +42,13 @@ main() {
 
     app::site::load_site_config "${site_path}"
 
-    app::backup::list_site_files
+    if [[ "${opt_excluded}" == 'true' ]]; then
+        app::backup::list_excluded_site_files
+    else
+        app::backup::list_site_files
+    fi
 
-    if [[ -n "${site_config[database_name]:-}" ]]; then
+    if [[ "${opt_excluded}" != 'true' && -n "${site_config[database_name]:-}" ]]; then
         printf '\nDatabase dump is also included: *%s\n' "${site_config[database_dump_suffix]}" >&2
     fi
 }
@@ -51,7 +57,7 @@ app_help() {
     local app_command="${0##*/}"
 
     cat <<HELP
-Preview files included in backup
+Preview files included or excluded from backup
 
 Usage:
 
@@ -63,7 +69,8 @@ Arguments:
 
 Options:
 
-  -h, --help  Show this help
+  -e, --excluded  Show files excluded from backup
+  -h, --help      Show this help
 HELP
 }
 

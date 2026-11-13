@@ -7,7 +7,7 @@ Bash backup tool for Joomla, WordPress & static sites.
 - **Entry**: `bin/rambo` — parses args/options, resolves `<command>` to `command/<name>`, exec's it.
 - **Commands**: files in `command/` (`backup`, `restore`, `detect`, `db:dump`, `db:cli`, `help`, `plugins`, `preview`). Each is a self-contained bash script sourcing `common.bash`.
 - **Libs**: `lib/*.bash` loaded via `app::use '<name>'` from `common.bash`. Uses associative array cache (`app_libs_loaded`) — double-sourcing a lib silently no-ops.
-  - `backup.bash` — shared archive logic: include/exclude pass building, adding site files to a zip, and dry-run listing of included files.
+  - `backup.bash` — shared archive logic: include/exclude pass building, adding site files to a zip, and dry-run listing of included/excluded files.
   - `site.bash` — config loading chain, `site_config` associative array (shared across commands).
   - `plugin.bash` — plugin discovery/search paths.
   - `database.bash` — mysqldump/mariadb-dump/pg_dump and client wrappers using temp credential files. Resolves `database_type` (config key `mysql|mariadb|postgresql`, otherwise auto-detected from installed dump tools: `mysqldump` → `mariadb-dump` → `pg_dump`).

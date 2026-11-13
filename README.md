@@ -81,7 +81,9 @@ rambo preview /path/to/site
 
 Prints the files that `rambo backup` would put into the archive, one path per line, relative to the backup root. Directory entries are omitted and the output is sorted and de-duplicated. This is a zip dry run, so nothing is written to disk and it is much faster than a full backup.
 
-If the site has a configured database, a note about the database dump (which is generated at backup time and cannot be previewed) is printed to stderr. Redirect stderr away for a clean file list:
+Pass `--excluded` (or `-e`) to print the opposite: files present under the backup root that would **not** end up in the archive. This includes files skipped by `include` patterns, not just those matched by `exclude`.
+
+When listing included files, if the site has a configured database, a note about the database dump (which is generated at backup time and cannot be previewed) is printed to stderr. Redirect stderr away for a clean file list:
 
 ```sh
 rambo preview /path/to/site 2>/dev/null

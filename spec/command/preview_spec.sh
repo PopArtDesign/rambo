@@ -26,14 +26,14 @@ Describe 'rambo preview'
         When call rambo preview -h
 
         The status should be success
-        The output should start with 'Preview files included in backup'
+        The output should start with 'Preview files included or excluded from backup'
     End
 
     It 'shows help message if --help option specified'
         When call rambo preview --help
 
         The status should be success
-        The output should start with 'Preview files included in backup'
+        The output should start with 'Preview files included or excluded from backup'
     End
 
     It "lists all site's files if no configuration provided"
@@ -111,6 +111,82 @@ CONFIG
 
         The status should be success
         The output should equal ''
+    End
+
+    It 'lists files excluded by exclude patterns'
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|exclude: *.css
+        End
+
+        When call rambo preview --excluded /dev/stdin
+
+        The status should be success
+        The output should equal 'css/style.css'
+    End
+
+    It 'lists files skipped by include patterns'
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|include: *.html
+        End
+
+        When call rambo preview --excluded /dev/stdin
+
+        The status should be success
+        The output should equal 'css/style.css'
+    End
+
+    It 'lists files excluded by combined include and exclude patterns'
+        config_file="$(TMPDIR="${SHELLSPEC_TMPBASE}" mktemp)"
+
+        cat >"${config_file}" <<CONFIG
+root: ${SHELLSPEC_PROJECT_ROOT}/fixture/joomla-site
+plugin: default
+exclude: /cache/* /tmp/* /administrator/cache/*
+include: */index.html
+CONFIG
+
+        When call rambo preview --excluded "${config_file}"
+
+        The status should be success
+        The output should equal $'administrator/cache/ignore-this-file\ncache/ignore-this-file\ntmp/ignore-this-file'
+    End
+
+    It 'outputs nothing when all files are included'
+        When call rambo preview --excluded ./fixture/simple-site
+
+        The status should be success
+        The output should equal ''
+    End
+
+    It 'accepts -e option for excluded files'
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|exclude: *.css
+        End
+
+        When call rambo preview -e /dev/stdin
+
+        The status should be success
+        The output should equal 'css/style.css'
+    End
+
+    It 'does not mention database dump when listing excluded files'
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+            #|exclude: *.css
+            #|database_name: simple
+            #|database_type: mysql
+            #|database_user: simple
+            #|database_password: simple
+        End
+
+        When call rambo preview --excluded /dev/stdin
+
+        The status should be success
+        The output should equal 'css/style.css'
+        The error should equal ''
     End
 
     It 'mentions database dump on stderr when database configured'

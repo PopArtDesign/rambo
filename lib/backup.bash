@@ -44,7 +44,26 @@ app::backup::list_site_files() {
     set -o noglob
     pushd "${site_config[backup_root]}" >/dev/null
 
-    app::backup::each_files_pass app::backup::list_pass "${archive}" | sort -u
+    app::backup::each_files_pass app::backup::list_pass "${archive}" | LC_ALL=C sort -u
+
+    popd >/dev/null
+    set +o noglob
+}
+
+app::backup::list_excluded_site_files() {
+    local archive="${TMPDIR:-/tmp}/rambo-preview.zip"
+    local all=''
+    local included=''
+
+    set -o noglob
+    pushd "${site_config[backup_root]}" >/dev/null
+
+    all="$(app::backup::list_pass "${archive}" . | LC_ALL=C sort -u)"
+    included="$(app::backup::each_files_pass app::backup::list_pass "${archive}" | LC_ALL=C sort -u)"
+
+    LC_ALL=C comm -23 \
+        <(if [[ -n "${all}" ]]; then printf '%s\n' "${all}"; fi) \
+        <(if [[ -n "${included}" ]]; then printf '%s\n' "${included}"; fi)
 
     popd >/dev/null
     set +o noglob
