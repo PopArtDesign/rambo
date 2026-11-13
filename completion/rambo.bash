@@ -53,7 +53,7 @@ _rambo_options() {
     detect) printf '%s' '-p --show-password -h --help' ;;
     preview) printf '%s' '-e --excluded -h --help' ;;
     plugins) printf '%s' '-a --all -p --paths -h --help' ;;
-    '') printf '%s' '-h --help' ;;
+    '') printf '%s' '-V --version -h --help' ;;
     esac
 }
 

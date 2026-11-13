@@ -31,7 +31,7 @@ See [Uninstall](#uninstall) to remove Rambo. Also see [Bash completion](#bash-co
 
 Rambo backs up all site data into a single `.zip` archive. Its [plugins](./plugin) detect site configuration — database, cache folders and more — and include or exclude files from the final backup.
 
-Other commands include `restore`, `db:dump`, `db:cli`, `detect`, `preview`, and `plugins` — see below. Run `rambo --help` for the full list.
+Other commands include `restore`, `db:dump`, `db:cli`, `detect`, `preview`, and `plugins` — see below. Run `rambo --help` for the full list, or `rambo --version` to show the installed version.
 
 ### backup
 

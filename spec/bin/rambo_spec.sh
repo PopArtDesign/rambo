@@ -1,5 +1,9 @@
 #shellcheck shell=bash
 
+app_version() {
+    sed -n "s/^declare -rx app_version='\(.*\)'$/\1/p" "${SHELLSPEC_PROJECT_ROOT}/bin/rambo"
+}
+
 Describe 'rambo'
     It 'fails when invoked without arguments'
         When call rambo
@@ -34,6 +38,20 @@ Describe 'rambo'
 
         The status should be success
         The output should start with 'rambo: simple backup tool for web sites'
+    End
+
+    It 'shows version when -V option specified'
+        When call rambo -V
+
+        The status should be success
+        The output should equal "rambo $(app_version)"
+    End
+
+    It 'shows version when --version option specified'
+        When call rambo --version
+
+        The status should be success
+        The output should equal "rambo $(app_version)"
     End
 
     It 'executes specified command'

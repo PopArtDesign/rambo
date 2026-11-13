@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 declare -rx app_name="${0##*/}"
+declare -rx app_version='0.3'
 declare -rx app_path="$(realpath "${0}")"
 declare -rx app_dir="$(dirname "${app_path}")"
 
@@ -21,6 +22,10 @@ main() {
     while [[ $# -gt 0 ]]; do
         case "${1}" in
         -h | --help) cmd='help' ;;
+        -V | --version)
+            echo "${app_name} ${app_version}"
+            exit 0
+            ;;
         --) shift && break ;;
         -*) app::error::unknown_option "${1}" ;;
         *) break ;;

@@ -29,6 +29,11 @@ Usage:
 
   ${app_name} <command> [options]
 
+Options:
+
+  -V, --version  Show version
+  -h, --help     Show this help
+
 $(app_available_commands)
 HELP
 }
