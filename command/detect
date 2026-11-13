@@ -8,9 +8,11 @@ app::use 'util'
 
 main() {
     local opt_help=false
+    local opt_show_password=false
 
     while [[ $# -gt 0 ]]; do
         case "${1}" in
+        -p | --show-password) opt_show_password=true ;;
         -h | --help) opt_help=true ;;
         --) shift && break ;;
         -?*) app::error::unknown_option "${1}" ;;
@@ -74,6 +76,10 @@ main() {
 
     if [[ -n "${site_config[database_password]:-}" ]]; then
         database_password='********'
+
+        if [[ "${opt_show_password}" == 'true' ]]; then
+            database_password="${site_config[database_password]}"
+        fi
     fi
 
     app::util::print_fields \
@@ -105,7 +111,8 @@ Arguments:
 
 Options:
 
-  -h, --help  Show this help
+  -p, --show-password  Show database password unmasked
+  -h, --help           Show this help
 HELP
 }
 

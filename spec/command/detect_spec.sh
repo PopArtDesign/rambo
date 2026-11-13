@@ -67,6 +67,22 @@ Describe 'rambo detect'
         The output should not include 'custom-password'
     End
 
+    It 'shows database password when --show-password option specified'
+        When call rambo detect --show-password ./fixture/custom-site
+
+        The status should be success
+        The output should include 'Password: custom-password'
+        The output should not include 'Password: ********'
+    End
+
+    It 'shows database password when -p option specified'
+        When call rambo detect -p ./fixture/custom-site
+
+        The status should be success
+        The output should include 'Password: custom-password'
+        The output should not include 'Password: ********'
+    End
+
     It 'shows help message if -h option specified'
         When call rambo detect -h
 

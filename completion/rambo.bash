@@ -49,7 +49,8 @@ _rambo_command_list() {
 
 _rambo_options() {
     case "${1}" in
-    backup | restore | detect | db:dump | db:cli) printf '%s' '-h --help' ;;
+    backup | restore | db:dump | db:cli) printf '%s' '-h --help' ;;
+    detect) printf '%s' '-p --show-password -h --help' ;;
     plugins) printf '%s' '-a --all -p --paths -h --help' ;;
     '') printf '%s' '-h --help' ;;
     esac
