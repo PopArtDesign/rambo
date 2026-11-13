@@ -213,7 +213,7 @@ Place a config file matching the local suffix pattern inside your site's root fo
 
 ```sh
 cat > xA4di35ie.rambo.conf <<CONFIG
-# Also available: 'wordpress' and 'joomla'
+# Also available: 'wordpress', 'joomla' and 'laravel'
 # Try "rambo plugins" to see all available plugins
 plugin: default
 
@@ -293,6 +293,125 @@ printf 'backup_root: %s\n' "${backup_root}"
 ```
 
 The archive then contains the release contents at its top level, and `exclude` patterns are applied relative to that directory.
+
+### Built-in plugins
+
+Rambo ships three auto-detecting plugins in [`plugin/`](./plugin): `wordpress`, `joomla` and `laravel`. They run in the order returned by the search paths; the first one that exits 0 wins.
+
+| Plugin | Detects | Sets | Notes |
+|---|---|---|---|
+| `wordpress` | `wp-config.php` in site root | `database_type: mysql`, `database_name`, `database_user`, `database_password`, excludes | Only MySQL/MariaDB |
+| `joomla` | `JConfig` in `configuration.php` | `database_type`, `database_name`, `database_user`, `database_password`, excludes/includes | MySQL or PostgreSQL |
+| `laravel` | `artisan` in site root (or in `current/` release) | excludes, `database_*` from `.env`, optional `backup_root` | Supports Deployer layout and `DB_URL` |
+
+All three emit config via stdout, so anything you put in a local `.rambo.conf` or main config still applies — plugin values are just additional directives, and later values win where they overlap. Use `rambo detect /path/to/site` to see the exact merged result.
+
+#### WordPress
+
+Detection: a `wp-config.php` file exists in the site root.
+
+Emitted config:
+
+- `exclude: /wp-content/cache/*`
+- `database_type: mysql`
+- `database_name`, `database_user`, `database_password` parsed from the `DB_NAME`, `DB_USER` and `DB_PASSWORD` constants in `wp-config.php`
+
+Only the site-root cache directory is excluded — plugin/theme caches, `wp-content/uploads` and the rest of `wp-content` stay in the archive. WordPress sites on MariaDB also work because the MySQL family is interchangeable; see [Database types](#database-types).
+
+The parser expects the constants to be defined with **single quotes**, e.g.:
+
+```php
+define( 'DB_NAME', 'wordpress' );
+define( 'DB_USER', 'wordpress' );
+define( 'DB_PASSWORD', 'secret' );
+```
+
+If your `wp-config.php` builds credentials dynamically, uses double quotes, or reads them from environment variables, Rambo will not find them — set the `database_*` keys manually in `.rambo.conf` (or use `database_url`).
+
+#### Joomla
+
+Detection: `configuration.php` contains `JConfig` (the generated Joomla configuration class).
+
+Emitted config:
+
+- `exclude: /cache/* /tmp/* /administrator/cache/*`
+- `include: */index.html` — keeps the `index.html` placeholder files inside excluded cache/tmp directories
+- `database_type` from `$dbtype`: `mysqli`, `mysql` or `pdomysql` → `mysql`; `pgsql` or `postgresql` → `postgresql`
+- `database_name`, `database_user`, `database_password` from `$db`, `$user`, `$password`
+
+Only the root `cache/`, `tmp/` and `administrator/cache/` directories are excluded. The table prefix (`$dbprefix`) is not used by Rambo. Credentials, like WordPress, must be single-quoted literals in `configuration.php`:
+
+```php
+public $dbtype = 'mysqli';
+public $host = 'localhost';
+public $user = 'joomla';
+public $password = 'secret';
+public $db = 'joomla';
+public $dbprefix = 'jos_';
+```
+
+`$host` and `$port` are not emitted by the plugin (Joomla usually stores the port inside `$host`). If your database is not on the default local socket, add `database_host` / `database_port` in config. For PostgreSQL sites, set `database_type: postgresql` explicitly if detection is ambiguous; the plugin already does this when `$dbtype` is `pgsql`.
+
+#### Laravel
+
+Detection: `artisan` exists in the site root, or the site root is a Deployer layout with a `current` symlink to a release directory containing `artisan`.
+
+Emitted config:
+
+- `exclude: /storage/framework/cache/* /bootstrap/cache/*`
+- `backup_root` (only for Deployer layouts) — the resolved target of `current`, e.g. `/var/www/site/releases/42`
+- `database_type`, `database_host`, `database_port`, `database_name`, `database_user`, `database_password` from `.env` keys `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+- `database_url` from `DB_URL`, emitted **after** the individual keys so it overrides them — matching Laravel's own precedence
+
+`DB_CONNECTION` values `pgsql` and `postgres` are normalized to `postgresql`; `mysql` and `mariadb` map directly.
+
+The `.env` parser accepts unquoted, single-quoted and double-quoted values, an optional `export` prefix, and trailing `# comments`:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD="secret"
+
+# Wins over the keys above
+DB_URL=mysql://laravel:secret@127.0.0.1:3306/laravel
+```
+
+For Deployer layouts the archive root is the active release, so `exclude` and `include` patterns are relative to `releases/<name>` — `current` and sibling releases are not archived. Put the site's `.rambo.conf` in that release directory (or use a main config with `root`) so it is found. `vendor/` is intentionally **not** excluded; add `exclude: vendor/*` yourself if you rebuild dependencies on deploy.
+
+Laravel config caching is not consulted: only `.env` is read. If the site reads its database settings from `config/database.php` or a cached `bootstrap/cache/config.php` only, set the `database_*` keys in Rambo config.
+
+#### Database-only backups for Laravel
+
+When the application code already lives in git (and assets are rebuilt on deploy), you usually only need a database dump. Exclude the whole tree — Rambo adds the dump after the file pass, so it still ends up in the archive:
+
+```sh
+cat > .rambo.conf <<'CONFIG'
+# 'plugin: laravel' is optional — the Laravel plugin auto-detects the site.
+exclude: *
+CONFIG
+
+rambo backup /path/to/site /path/to/backup.zip
+```
+
+The resulting `.zip` contains only the dump (named after `database_dump_suffix`, default `.dump.sql`), with no application files. This works for both regular and Deployer layouts. In a Deployer layout the config can sit in the active `releases/<name>` directory, but it must omit `plugin:` — Rambo only reads that directory after the plugin has already been chosen, so setting `plugin` there is an error (auto-detection picks `laravel` anyway).
+
+Requirements and caveats:
+
+- A database must be detected (`database_name` set from `.env` or config), otherwise the archive will be empty.
+- `rambo preview` lists no files in this setup — that is expected. It prints the database-dump note to stderr; use `rambo preview /path/to/site 2>/dev/null` for an empty list.
+- Restoring such a backup extracts the dump file and then asks whether to import it (see [restore](#restore)).
+- `exclude: *` also hides `vendor/` and `.env`, so keep a copy of `.env` elsewhere — it is needed to decrypt or connect after restore.
+- To keep a few files alongside the dump, add `include` patterns; includes are added before the catch-all exclude. Laravel's standard upload location is `storage/app/public` (per `Storage::disk('public')`, exposed through the `public/storage` symlink), so a typical setup is:
+
+  ```sh
+  exclude: *
+  include: storage/app/public/*
+  ```
+
+  If the application writes uploads directly into the web root instead, use `include: public/uploads/*` (or list both patterns).
 
 ### The `default` plugin
 
