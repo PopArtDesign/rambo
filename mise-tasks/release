@@ -11,7 +11,7 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 version="$(sed -n "s/^declare -rx app_version='\(.*\)'$/\1/p" bin/rambo)"
-base="${version}"
+base="${version%-dev}"
 
 case "${base}" in
 *.*.*) ;;
@@ -27,7 +27,18 @@ args=(
 )
 
 if [[ "${usage_dry_run:-false}" == 'true' ]]; then
-    args=(--dry "${args[@]}")
+    versions --dry "${args[@]}"
+
+    exit 0
 fi
 
 versions "${args[@]}"
+
+released="$(sed -n "s/^declare -rx app_version='\(.*\)'$/\1/p" bin/rambo)"
+dev_version="${released}-dev"
+
+sed -i "s#^declare -rx app_version=.*#declare -rx app_version='${dev_version}'#" bin/rambo
+
+git add bin/rambo
+git commit -m "chore: start ${dev_version} development"
+git push
