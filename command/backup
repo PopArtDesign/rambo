@@ -2,6 +2,7 @@
 
 source "${app_common}"
 
+app::use 'backup'
 app::use 'database'
 app::use 'error'
 app::use 'site'
@@ -79,29 +80,7 @@ app_create_backup_file() {
 }
 
 app_backup_site_files() {
-    local site_path="${site_config[backup_root]}"
-    local backup_file="${site_config[backup_file]}"
-
-    local include="${site_config[include]:-}"
-    local exclude="${site_config[exclude]:-}"
-
-    set -o noglob
-    pushd "${site_path}" >/dev/null
-
-    if [[ -z "${exclude}${include}" ]]; then
-        app_zip "${backup_file}" .
-    else
-        if [[ -n "${include}" ]]; then
-            app_zip "${backup_file}" . -i ${include}
-        fi
-
-        if [[ -n "${exclude}" ]]; then
-            app_zip "${backup_file}" . -x ${exclude}
-        fi
-    fi
-
-    set +o noglob
-    popd >/dev/null
+    app::backup::add_site_files "${site_config[backup_file]}"
 }
 
 app_backup_site_database() {
@@ -118,14 +97,9 @@ app_backup_site_database() {
         return 1
     fi
 
-    app_zip -j "${backup_file}" "${dump}"
+    app::backup::add_to_archive "${backup_file}" -j "${dump}"
 
     rm --force "${dump}"
-}
-
-app_zip() {
-    # Ignore exit code 12: zip has nothing to do
-    command zip -qur "-${COMPRESSION_LEVEL:-9}" "$@" || [[ "$?" -eq 12 ]]
 }
 
 app_help() {

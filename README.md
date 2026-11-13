@@ -31,7 +31,7 @@ See [Uninstall](#uninstall) to remove Rambo. Also see [Bash completion](#bash-co
 
 Rambo backs up all site data into a single `.zip` archive. Its [plugins](./plugin) detect site configuration — database, cache folders and more — and include or exclude files from the final backup.
 
-Other commands include `restore`, `db:dump`, `db:cli`, `detect`, and `plugins` — see below. Run `rambo --help` for the full list.
+Other commands include `restore`, `db:dump`, `db:cli`, `detect`, `preview`, and `plugins` — see below. Run `rambo --help` for the full list.
 
 ### backup
 
@@ -72,6 +72,20 @@ rambo detect /path/to/site
 ```
 
 Prints the resolved configuration — plugin, config files, root path, backup root (when it differs from root), exclude/include patterns, and database settings. Useful for debugging why a site isn't backing up correctly. Database passwords are masked by default; pass `--show-password` (or `-p`) to print them unmasked.
+
+### preview
+
+```sh
+rambo preview /path/to/site
+```
+
+Prints the files that `rambo backup` would put into the archive, one path per line, relative to the backup root. Directory entries are omitted and the output is sorted and de-duplicated. This is a zip dry run, so nothing is written to disk and it is much faster than a full backup.
+
+If the site has a configured database, a note about the database dump (which is generated at backup time and cannot be previewed) is printed to stderr. Redirect stderr away for a clean file list:
+
+```sh
+rambo preview /path/to/site 2>/dev/null
+```
 
 ### plugins
 

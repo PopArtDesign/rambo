@@ -5,7 +5,7 @@
 #
 # Without bash-completion just source this file from ~/.bashrc.
 
-declare -g _rambo_fallback_commands='backup db:cli db:dump detect help plugins restore'
+declare -g _rambo_fallback_commands='backup db:cli db:dump detect help plugins preview restore'
 
 # Parent of the bin directory containing the rambo executable being completed.
 _rambo_root_dir() {
@@ -191,7 +191,7 @@ _rambo() {
             ;;
         esac
         ;;
-    detect | db:dump | db:cli)
+    detect | db:dump | db:cli | preview)
         [[ "${#positional[@]}" -eq 0 ]] && _rambo_complete_path "${cur}"
         ;;
     help)

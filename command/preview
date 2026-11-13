@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+source "${app_common}"
+
+app::use 'backup'
+app::use 'error'
+app::use 'site'
+
+main() {
+    local opt_help=false
+
+    while [[ $# -gt 0 ]]; do
+        case "${1}" in
+        -h | --help) opt_help=true ;;
+        --) shift && break ;;
+        -?*) app::error::unknown_option "${1}" ;;
+        *) break ;;
+        esac
+
+        shift
+    done
+
+    if [[ "${opt_help}" == 'true' ]]; then
+        app_help
+
+        exit 0
+    fi
+
+    if [[ $# -gt 1 ]]; then
+        app::error::too_many_arguments 1
+    fi
+
+    if [[ $# -lt 1 ]]; then
+        app::error::missing_argument 'path to site or config file'
+    fi
+
+    local site_path="${1}"
+
+    local -A site_config=()
+
+    app::site::load_site_config "${site_path}"
+
+    app::backup::list_site_files
+
+    if [[ -n "${site_config[database_name]:-}" ]]; then
+        printf '\nDatabase dump is also included: *%s\n' "${site_config[database_dump_suffix]}" >&2
+    fi
+}
+
+app_help() {
+    local app_command="${0##*/}"
+
+    cat <<HELP
+Preview files included in backup
+
+Usage:
+
+  ${app_name} ${app_command} [options] <site path>
+
+Arguments:
+
+  site path  Path to site's root or config file
+
+Options:
+
+  -h, --help  Show this help
+HELP
+}
+
+main "$@"
