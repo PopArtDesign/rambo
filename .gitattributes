@@ -5,6 +5,7 @@
 /.shellspec* export-ignore
 /AGENTS.md export-ignore
 /mise.toml export-ignore
+/mise-tasks export-ignore
 
 # Text files → normalize line endings on checkout
 *.md text

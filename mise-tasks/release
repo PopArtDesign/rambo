@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+#MISE description="Release a new version: patch (default), minor or major"
+#USAGE arg "[level]" help="Version bump level" default="patch" {
+#USAGE   choices "patch" "minor" "major"
+#USAGE }
+#USAGE flag "-D --dry-run" help="Show what would be done without changing files or git"
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+version="$(sed -n "s/^declare -rx app_version='\(.*\)'$/\1/p" bin/rambo)"
+base="${version}"
+
+case "${base}" in
+*.*.*) ;;
+*) base="${base}.0" ;;
+esac
+
+args=(
+    --prefix
+    --base "${base}"
+    -r "s#^declare -rx app_version=.*#declare -rx app_version='_VER_'#m"
+    "${usage_level:-patch}"
+    bin/rambo
+)
+
+if [[ "${usage_dry_run:-false}" == 'true' ]]; then
+    args=(--dry "${args[@]}")
+fi
+
+versions "${args[@]}"
