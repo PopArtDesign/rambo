@@ -1,3 +1,4 @@
+# Prints sorted plugin executables found in configured plugin paths.
 app::plugin::plugins_list() {
     local IFS=':'
     local path
@@ -9,6 +10,7 @@ app::plugin::plugins_list() {
     done
 }
 
+# Prints path of the first plugin executable matching the given name.
 app::plugin::find_executable() {
     local name="${1}"
 

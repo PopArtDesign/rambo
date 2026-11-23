@@ -3,6 +3,7 @@ app::use 'error'
 app::use 'plugin'
 app::use 'util'
 
+# Loads main, plugin and local config, then finalizes resolved values.
 app::site::load_site_config() {
     app::site::load_main_config "${1}"
 
@@ -16,6 +17,7 @@ app::site::load_site_config() {
     app::site::finalize_config
 }
 
+# Loads config from a site directory, a config file or "-" for stdin.
 app::site::load_main_config() {
     local site_path="${1:-/dev/stdin}"
 
@@ -58,6 +60,7 @@ app::site::load_main_config() {
     site_config[root]="$(app::util::realpath --working-dir "${base_config_dir}" -qm "${site_config[root]}")"
 }
 
+# Detects or loads a plugin and applies the config it prints.
 app::site::load_plugin_config() {
     if [[ -v 'site_config[plugin_config]' ]]; then
         app::error::error "Plugin already loaded: ${site_config[plugin]:-}"
@@ -106,6 +109,7 @@ app::site::load_plugin_config() {
     fi
 }
 
+# Loads local config from the site root and the known backup root.
 app::site::load_local_config() {
     [[ -z "${site_config[local_config_file_suffix]}" ]] && return
 
@@ -153,6 +157,7 @@ app::site::load_backup_root_local_config() {
     fi
 }
 
+# Loads the single local config file found in the given directories.
 app::site::load_local_config_from() {
     local -a config_files=()
     local dir=''
@@ -179,6 +184,7 @@ app::site::load_local_config_from() {
     app::site::load_config "${config_file}" 'local' <"${config_file}"
 }
 
+# Parses flat "key: value" config from stdin, validating keys per context.
 app::site::load_config() {
     local src="${1}"
     local context="${2}"
@@ -271,6 +277,7 @@ app::site::finalize_config() {
     fi
 }
 
+# Resolves and validates backup_root, defaulting to the site root.
 app::site::finalize_backup_root() {
     local site_root="${site_config[root]:-}"
 
@@ -292,6 +299,7 @@ app::site::finalize_backup_root() {
     fi
 }
 
+# Validates that site root is set, exists and is readable.
 app::site::check_site_root_exists_and_readable() {
     if [[ -z "${site_config[root]:-}" ]]; then
         app::error::error 'Site root is not set'

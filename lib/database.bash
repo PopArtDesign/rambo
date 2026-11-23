@@ -1,6 +1,7 @@
 app::use 'error'
 app::use 'util'
 
+# Dumps the configured database to stdout.
 app::database::dump() {
     app::database::require_type || return 1
 
@@ -17,6 +18,7 @@ app::database::dump() {
     esac
 }
 
+# Opens a client for the configured database.
 app::database::cli() {
     app::database::require_type || return 1
 
@@ -80,6 +82,7 @@ app::database::is_mariadb() {
     [[ "${version,,}" == *mariadb* ]]
 }
 
+# Runs mysqldump (or mariadb-dump when mysqldump is missing).
 app::database::mysqldump() {
     local binary='mysqldump'
 
@@ -88,6 +91,7 @@ app::database::mysqldump() {
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
+# Runs mysql (or mariadb when mysql is missing).
 app::database::mysql() {
     local binary='mysql'
 
@@ -96,6 +100,7 @@ app::database::mysql() {
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
+# Runs mariadb-dump (or mysqldump when mariadb-dump is missing).
 app::database::mariadb_dump() {
     local binary='mariadb-dump'
 
@@ -104,6 +109,7 @@ app::database::mariadb_dump() {
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
+# Runs mariadb (or mysql when mariadb is missing).
 app::database::mariadb() {
     local binary='mariadb'
 
@@ -112,6 +118,7 @@ app::database::mariadb() {
     command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
+# Runs pg_dump with connection settings from site config.
 app::database::pg_dump() {
     local -a args=()
 
@@ -126,6 +133,7 @@ app::database::pg_dump() {
     )
 }
 
+# Runs psql with connection settings from site config.
 app::database::psql() {
     local -a args=()
 
@@ -140,6 +148,7 @@ app::database::psql() {
     )
 }
 
+# Prints a MySQL credential file for the given section.
 app::database::mysql_credentials() {
     cat <<EOF
 [${1:-client}]

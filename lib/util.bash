@@ -51,6 +51,7 @@ app::util::print_fields() {
     done
 }
 
+# Prompts yes/no and succeeds only on "y".
 app::util::confirm() {
     local reply='n'
     local message="${1:-Sure?}"

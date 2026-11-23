@@ -1,3 +1,4 @@
+# Calls callback once per include/exclude pass derived from site config.
 app::backup::each_files_pass() {
     local callback="${1}"
     local archive="${2}"
@@ -18,6 +19,7 @@ app::backup::each_files_pass() {
     fi
 }
 
+# Adds files matching the given paths to the archive.
 app::backup::add_to_archive() {
     local archive="${1}"
     shift
@@ -26,6 +28,7 @@ app::backup::add_to_archive() {
     command zip -qur "-${COMPRESSION_LEVEL:-9}" "${archive}" "$@" || [[ "$?" -eq 12 ]]
 }
 
+# Adds site files, relative to backup_root, to the archive.
 app::backup::add_site_files() {
     local archive="${1}"
 
@@ -38,6 +41,7 @@ app::backup::add_site_files() {
     set +o noglob
 }
 
+# Prints files that would be added to the archive.
 app::backup::list_site_files() {
     local archive="${TMPDIR:-/tmp}/rambo-preview.zip"
 
@@ -50,6 +54,7 @@ app::backup::list_site_files() {
     set +o noglob
 }
 
+# Prints site files skipped by include/exclude config.
 app::backup::list_excluded_site_files() {
     local archive="${TMPDIR:-/tmp}/rambo-preview.zip"
     local all=''
@@ -69,6 +74,7 @@ app::backup::list_excluded_site_files() {
     set +o noglob
 }
 
+# Prints file names from a zip dry-run listing.
 app::backup::list_pass() {
     local archive="${1}"
     shift
