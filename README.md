@@ -41,6 +41,16 @@ rambo backup /path/to/site /path/to/backup.zip
 
 Creates a `.zip` archive of the site files plus an optional database dump (embedded inside). Refuses to overwrite existing files; backup path must end in `.zip`.
 
+Pass an existing directory as the second argument to generate the file name automatically:
+
+```sh
+# creates /path/to/backups/site-20261123191532.zip
+
+rambo backup /path/to/site /path/to/backups
+```
+
+The generated name uses the site root's directory name and a timestamp.
+
 ### restore
 
 ```sh

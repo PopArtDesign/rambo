@@ -36,18 +36,24 @@ main() {
     fi
 
     if [[ $# -lt 2 ]]; then
-        app::error::missing_argument 'path to backup file'
+        app::error::missing_argument 'path to backup file or directory'
     fi
 
     local site_path="${1}"
-    local backup_file="$(realpath -qm "${2}")"
+    local backup_path="$(realpath -qm "${2}")"
+    local backup_dir=''
+    local backup_file="${backup_path}"
 
-    if ! [[ "${backup_file}" == *.zip ]]; then
-        app::error::error "Backup file must have .zip extension: ${backup_file}"
-    fi
+    if [[ -d "${backup_path}" ]]; then
+        backup_dir="${backup_path}"
+    else
+        if ! [[ "${backup_file}" == *.zip ]]; then
+            app::error::error "Backup file must have .zip extension: ${backup_file}"
+        fi
 
-    if [[ -e "${backup_file}" ]]; then
-        app::error::error "Backup file already exists: ${backup_file}"
+        if [[ -e "${backup_file}" ]]; then
+            app::error::error "Backup file already exists: ${backup_file}"
+        fi
     fi
 
     local -A site_config=(
@@ -55,6 +61,16 @@ main() {
     )
 
     app::site::load_site_config "${site_path}"
+
+    if [[ -n "${backup_dir}" ]]; then
+        backup_file="$(app_backup_file_name "${site_config[root]}" "${backup_dir}")"
+
+        if [[ -e "${backup_file}" ]]; then
+            app::error::error "Backup file already exists: ${backup_file}"
+        fi
+
+        site_config[backup_file]="${backup_file}"
+    fi
 
     printf 'Site: %s\n' "${site_config[root]}"
 
@@ -73,6 +89,13 @@ main() {
     app_backup_site_database
 
     printf 'Done: %s\n' "${backup_file}"
+}
+
+app_backup_file_name() {
+    local site_root="${1}"
+    local backup_dir="${2}"
+
+    printf '%s/%s-%s.zip\n' "${backup_dir%/}" "${site_root##*/}" "$(date +%Y%m%d%H%M%S)"
 }
 
 app_create_backup_file() {
@@ -110,12 +133,13 @@ Backup site
 
 Usage:
 
-  ${app_name} ${app_command} [options] <site path> <backup file>
+  ${app_name} ${app_command} [options] <site path> <backup path>
 
 Arguments:
 
   site path    Path to site's root or config file
-  backup file  Path to backup file (.zip)
+  backup path  Path to backup file (.zip), or an existing directory
+               where a file named <site>-<date>.zip is created
 
 Options:
 

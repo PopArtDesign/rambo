@@ -44,6 +44,33 @@ Describe 'rambo backup'
         The error should match pattern '*Backup file already exists: */fixture/empty.zip*'
     End
 
+    It 'generates backup file name when backup path is a directory'
+        backup_dir="$(TMPDIR="${SHELLSPEC_TMPBASE}" mktemp -d)"
+
+        When call rambo backup ./fixture/simple-site "${backup_dir}"
+
+        backup_file="$(echo "${backup_dir}"/*.zip)"
+
+        The status should be success
+        The output should match pattern "*Done: ${backup_dir}/simple-site-*.zip"
+        The file "${backup_file}" should be file
+        The result of "backup_content()" should equal $'css/\ncss/style.css\nindex.html'
+    End
+
+    It 'generates backup file name from site root when site path is a config file'
+        backup_dir="$(TMPDIR="${SHELLSPEC_TMPBASE}" mktemp -d)"
+
+        Data:expand
+            #|root: ${SHELLSPEC_PROJECT_ROOT}/fixture/simple-site
+        End
+
+        When call rambo backup /dev/stdin "${backup_dir}"
+
+        The status should be success
+        The output should match pattern "*Done: ${backup_dir}/simple-site-*.zip"
+        The value "$(echo "${backup_dir}"/*.zip)" should match pattern "*/simple-site-*.zip"
+    End
+
     It 'shows help message if -h option specified'
         When call rambo backup -h
 
