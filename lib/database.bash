@@ -88,7 +88,7 @@ app::database::mysqldump() {
 
     command -v mysqldump >/dev/null 2>&1 || binary='mariadb-dump'
 
-    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
+    "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 # Runs mysql (or mariadb when mysql is missing).
@@ -97,7 +97,7 @@ app::database::mysql() {
 
     command -v mysql >/dev/null 2>&1 || binary='mariadb'
 
-    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
+    "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 # Runs mariadb-dump (or mysqldump when mariadb-dump is missing).
@@ -106,7 +106,7 @@ app::database::mariadb_dump() {
 
     command -v mariadb-dump >/dev/null 2>&1 || binary='mysqldump'
 
-    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
+    "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 # Runs mariadb (or mysql when mariadb is missing).
@@ -115,7 +115,7 @@ app::database::mariadb() {
 
     command -v mariadb >/dev/null 2>&1 || binary='mysql'
 
-    command "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
+    "${binary}" --defaults-file=<(app::database::mysql_credentials 'client') "$@"
 }
 
 # Runs pg_dump with connection settings from site config.
@@ -129,7 +129,7 @@ app::database::pg_dump() {
     (
         [[ -n "${site_config[database_password]:-}" ]] && export PGPASSWORD="${site_config[database_password]}"
 
-        command pg_dump ${args[@]+"${args[@]}"} "$@"
+        pg_dump ${args[@]+"${args[@]}"} "$@"
     )
 }
 
@@ -144,7 +144,7 @@ app::database::psql() {
     (
         [[ -n "${site_config[database_password]:-}" ]] && export PGPASSWORD="${site_config[database_password]}"
 
-        command psql ${args[@]+"${args[@]}"} "$@"
+        psql ${args[@]+"${args[@]}"} "$@"
     )
 }
 

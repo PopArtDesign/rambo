@@ -6,7 +6,7 @@ app::plugin::plugins_list() {
     for path in ${app_plugins_path}; do
         [[ ! -e "${path}" ]] && continue
 
-        command find "${path}" -maxdepth 1 -type f -executable | command sort
+        find "${path}" -maxdepth 1 -type f -executable | sort
     done
 }
 

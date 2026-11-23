@@ -99,7 +99,7 @@ app_backup_file_name() {
 }
 
 app_create_backup_file() {
-    : | command zip -q "${backup_file}" - && command zip -qd "${backup_file}" -
+    : | zip -q "${backup_file}" - && zip -qd "${backup_file}" -
 }
 
 app_backup_site_files() {
@@ -112,7 +112,7 @@ app_backup_site_database() {
     local backup_file="${site_config[backup_file]}"
     local dump_file_suffix="${site_config[database_dump_suffix]}"
 
-    local dump="$(command mktemp --suffix "${dump_file_suffix}")"
+    local dump="$(mktemp --suffix "${dump_file_suffix}")"
 
     if ! app::database::dump >"${dump}"; then
         rm --force "${dump}"

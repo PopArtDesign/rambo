@@ -62,7 +62,7 @@ app_available_commands() {
 }
 
 app_command_desc() {
-    command grep -F -m 1 -A 1 '<<HELP' "${app_commands_path}/${1}" | tail -n 1
+    grep -F -m 1 -A 1 '<<HELP' "${app_commands_path}/${1}" | tail -n 1
 }
 
 main "$@"

@@ -30,7 +30,7 @@ app::util::realpath() {
         return
     fi
 
-    (cd "${working_dir}" && command realpath ${opts[@]+"${opts[@]}"} "$@")
+    (cd "${working_dir}" && realpath ${opts[@]+"${opts[@]}"} "$@")
 }
 
 # Prints label/value pairs aligned by the longest label.

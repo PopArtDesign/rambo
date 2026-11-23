@@ -25,7 +25,7 @@ app::backup::add_to_archive() {
     shift
 
     # Ignore exit code 12: zip has nothing to do
-    command zip -qur "-${COMPRESSION_LEVEL:-9}" "${archive}" "$@" || [[ "$?" -eq 12 ]]
+    zip -qur "-${COMPRESSION_LEVEL:-9}" "${archive}" "$@" || [[ "$?" -eq 12 ]]
 }
 
 # Adds site files, relative to backup_root, to the archive.
@@ -80,7 +80,7 @@ app::backup::list_pass() {
     shift
 
     local output=''
-    output="$(command zip -sf -r "${archive}" "$@" || [[ "$?" -eq 12 ]])"
+    output="$(zip -sf -r "${archive}" "$@" || [[ "$?" -eq 12 ]])"
 
     # Dry-run output: a header, two-space indented entries, then a total line.
     awk '/^  / { name = substr($0, 3); if (name !~ /\/$/) print name }' <<<"${output}"
