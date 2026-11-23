@@ -3,7 +3,7 @@
 app_name=rambo
 app_libs_path=./lib
 
-Include ./common.bash
+Include lib/loader.bash
 Include ./lib/site.bash
 
 Describe 'app::site::load_main_config'

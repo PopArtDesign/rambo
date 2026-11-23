@@ -3,7 +3,7 @@
 app_name=rambo
 app_libs_path=./lib
 
-Include ./common.bash
+Include lib/loader.bash
 Include ./lib/util.bash
 
 Describe 'app::util::realpath'

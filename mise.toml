@@ -5,7 +5,7 @@ shellspec = "0.28.1"
 shfmt = "3.9.0"
 
 [vars]
-scripts = "bin/* command/* common.bash lib/*.bash plugin/* mise-tasks/*"
+scripts = "bin/* command/* lib/*.bash plugin/* mise-tasks/*"
 completion_scripts = "completion/*.bash"
 
 [tasks]

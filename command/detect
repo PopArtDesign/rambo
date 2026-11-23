@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "${app_common}"
+source "${app_loader}"
 
 app::use 'error'
 app::use 'site'
