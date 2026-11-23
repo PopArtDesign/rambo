@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 
+# Some hosting layouts keep the site in a `public_html` directory or symlink.
+backup_root=''
+
+if [[ -d 'public_html' && -f 'public_html/configuration.php' ]]; then
+    backup_root="$(readlink -f 'public_html')"
+    cd "${backup_root}"
+fi
+
 grep 'JConfig' 'configuration.php' &>/dev/null || exit 1
 
 cat <<CONFIG
 exclude: /cache/* /tmp/* /administrator/cache/*
 include: */index.html
 CONFIG
+
+if [[ -n "${backup_root}" ]]; then
+    printf 'backup_root: %s\n' "${backup_root}"
+fi
 
 sed -nE \
     -e "s/^.*\\\$dbtype[=[:space:]]+.*'(mysqli|mysql|pdomysql)'.*$/database_type: mysql/p" \

@@ -42,6 +42,34 @@ Describe 'Joomla plugin'
         The output should include 'database_name: joomla-database'
     End
 
+    It 'detects Joomla through a public_html symlink and sets backup_root'
+        site_dir="${SHELLSPEC_TMPBASE}/joomla-public-html-site"
+        mkdir -p "${site_dir}"
+        ln -sfn "${SHELLSPEC_PROJECT_ROOT}/fixture/joomla-site" "${site_dir}/public_html"
+
+        cd "${site_dir}"
+
+        When call "${SHELLSPEC_PROJECT_ROOT}/plugin/joomla"
+
+        The status should be success
+        The output should include "backup_root: ${SHELLSPEC_PROJECT_ROOT}/fixture/joomla-site"
+        The output should include 'database_name: joomla-database'
+    End
+
+    It 'detects Joomla through a public_html directory and sets backup_root'
+        site_dir="${SHELLSPEC_TMPBASE}/joomla-public-html-dir-site"
+        mkdir -p "${site_dir}/public_html"
+        cp "${SHELLSPEC_PROJECT_ROOT}/fixture/joomla-site/configuration.php" "${site_dir}/public_html/"
+
+        cd "${site_dir}"
+
+        When call "${SHELLSPEC_PROJECT_ROOT}/plugin/joomla"
+
+        The status should be success
+        The output should include "backup_root: ${site_dir}/public_html"
+        The output should include 'database_name: joomla-database'
+    End
+
     It 'excludes "cache" and "tmp" folders'
         backup_file="$(backup_file_name)"
 

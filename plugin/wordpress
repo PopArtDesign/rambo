@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 
+# Some hosting layouts keep the site in a `public_html` directory or symlink.
+backup_root=''
+
+if [[ -d 'public_html' && -f 'public_html/wp-config.php' ]]; then
+    backup_root="$(readlink -f 'public_html')"
+    cd "${backup_root}"
+fi
+
 [[ -f 'wp-config.php' ]] || exit 1
 
 cat <<CONFIG
 exclude: /wp-content/cache/*
 database_type: mysql
 CONFIG
+
+if [[ -n "${backup_root}" ]]; then
+    printf 'backup_root: %s\n' "${backup_root}"
+fi
 
 sed -nE \
     -e "s/^.*DB_NAME.*'(.*)'.*$/database_name: \1/p" \

@@ -310,19 +310,20 @@ Rambo ships three auto-detecting plugins in [`plugin/`](./plugin): `wordpress`, 
 
 | Plugin | Detects | Sets | Notes |
 |---|---|---|---|
-| `wordpress` | `wp-config.php` in site root | `database_type: mysql`, `database_name`, `database_user`, `database_password`, excludes | Only MySQL/MariaDB |
-| `joomla` | `JConfig` in `configuration.php` | `database_type`, `database_name`, `database_user`, `database_password`, excludes/includes | MySQL or PostgreSQL |
+| `wordpress` | `wp-config.php` in site root (or in `public_html/` directory/symlink) | `database_type: mysql`, `database_name`, `database_user`, `database_password`, excludes, optional `backup_root` | Only MySQL/MariaDB |
+| `joomla` | `JConfig` in `configuration.php` (or in `public_html/` directory/symlink) | `database_type`, `database_name`, `database_user`, `database_password`, excludes/includes, optional `backup_root` | MySQL or PostgreSQL |
 | `laravel` | `artisan` in site root (or in `current/` release) | excludes, `database_*` from `.env`, optional `backup_root` | Supports Deployer layout and `DB_URL` |
 
 All three emit config via stdout, so anything you put in a local `.rambo.conf` or main config still applies — plugin values are just additional directives, and later values win where they overlap. Use `rambo detect /path/to/site` to see the exact merged result.
 
 #### WordPress
 
-Detection: a `wp-config.php` file exists in the site root.
+Detection: a `wp-config.php` file exists in the site root, or the site root contains a `public_html` directory or symlink whose target has `wp-config.php`.
 
 Emitted config:
 
 - `exclude: /wp-content/cache/*`
+- `backup_root` (only when detected through `public_html`) — the resolved `public_html` path or symlink target
 - `database_type: mysql`
 - `database_name`, `database_user`, `database_password` parsed from the `DB_NAME`, `DB_USER` and `DB_PASSWORD` constants in `wp-config.php`
 
@@ -340,11 +341,12 @@ If your `wp-config.php` builds credentials dynamically, uses double quotes, or r
 
 #### Joomla
 
-Detection: `configuration.php` contains `JConfig` (the generated Joomla configuration class).
+Detection: `configuration.php` contains `JConfig` (the generated Joomla configuration class), either in the site root or in a `public_html` directory or symlink target.
 
 Emitted config:
 
 - `exclude: /cache/* /tmp/* /administrator/cache/*`
+- `backup_root` (only when detected through `public_html`) — the resolved `public_html` path or symlink target
 - `include: */index.html` — keeps the `index.html` placeholder files inside excluded cache/tmp directories
 - `database_type` from `$dbtype`: `mysqli`, `mysql` or `pdomysql` → `mysql`; `pgsql` or `postgresql` → `postgresql`
 - `database_name`, `database_user`, `database_password` from `$db`, `$user`, `$password`
