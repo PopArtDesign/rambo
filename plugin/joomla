@@ -10,14 +10,14 @@ fi
 
 grep 'JConfig' 'configuration.php' &>/dev/null || exit 1
 
+if [[ -n "${backup_root}" ]]; then
+    echo "backup_root: ${backup_root}"
+fi
+
 cat <<CONFIG
 exclude: /cache/* /tmp/* /administrator/cache/*
 include: */index.html
 CONFIG
-
-if [[ -n "${backup_root}" ]]; then
-    printf 'backup_root: %s\n' "${backup_root}"
-fi
 
 sed -nE \
     -e "s/^.*\\\$dbtype[=[:space:]]+.*'(mysqli|mysql|pdomysql)'.*$/database_type: mysql/p" \

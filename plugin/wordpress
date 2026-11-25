@@ -10,14 +10,14 @@ fi
 
 [[ -f 'wp-config.php' ]] || exit 1
 
+if [[ -n "${backup_root}" ]]; then
+    echo "backup_root: ${backup_root}"
+fi
+
 cat <<CONFIG
 exclude: /wp-content/cache/*
 database_type: mysql
 CONFIG
-
-if [[ -n "${backup_root}" ]]; then
-    printf 'backup_root: %s\n' "${backup_root}"
-fi
 
 sed -nE \
     -e "s/^.*DB_NAME.*'(.*)'.*$/database_name: \1/p" \
